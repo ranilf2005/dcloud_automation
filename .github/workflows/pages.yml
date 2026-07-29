@@ -1,0 +1,45 @@
+name: Deploy Lab Guide to GitHub Pages
+
+# Publishes docs_labguide/ (self-contained lab guide) to GitHub Pages.
+# Runs entirely on GitHub-hosted runners — it does NOT touch the lab
+# (CML, routers, or the lab GitLab on 198.18.1.18).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs_labguide/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+# Least-privilege permissions required to deploy to Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time; do not cancel an in-progress publish.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload lab guide as Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs_labguide
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
