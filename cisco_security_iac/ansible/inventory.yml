@@ -1,0 +1,10 @@
+---
+# FMC management hosts. Pair A is the default target; Pair B is commented out.
+all:
+  children:
+    fmc:
+      hosts:
+        fmc-760:
+          ansible_host: 198.18.1.10
+        # fmc-100:
+        #   ansible_host: 198.18.1.11

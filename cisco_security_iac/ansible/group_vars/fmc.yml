@@ -1,0 +1,13 @@
+---
+# Connection settings for the Cisco FMC HTTP API (cisco.fmcansible).
+ansible_network_os: cisco.fmcansible.fmc
+ansible_connection: httpapi
+ansible_httpapi_use_ssl: true
+ansible_httpapi_validate_certs: false
+ansible_httpapi_port: 443
+ansible_user: admin
+
+# Provide the password out-of-band; never commit it.
+#   export FMC_PASSWORD='Cisco@123'
+# Alternatively store it with ansible-vault and reference it here.
+ansible_password: "{{ lookup('ansible.builtin.env', 'FMC_PASSWORD') }}"

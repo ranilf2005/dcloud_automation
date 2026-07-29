@@ -1,0 +1,17 @@
+# Copy to terraform.tfvars and adjust for your target FMC.
+# DO NOT commit real secrets — terraform.tfvars is gitignored.
+#
+#   Pair A (FMC 7.6): https://198.18.1.10   (FTD mgmt 198.18.1.20)
+#   Pair B          : https://198.18.1.11   (FTD mgmt 198.18.1.21)
+
+fmc_url      = "https://198.18.1.10"
+fmc_username = "admin"
+fmc_insecure = true
+
+# Prefer setting the password out-of-band instead of here:
+#   export TF_VAR_fmc_password='Cisco@123'
+# fmc_password = "Cisco@123"
+
+inside_network_cidr  = "198.18.1.0/24"
+outside_network_cidr = "198.18.2.0/24"
+acp_name             = "inside-to-outside-policy"

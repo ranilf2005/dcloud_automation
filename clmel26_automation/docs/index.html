@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NetDevOps Automation — End-to-End Lab Guide | LTRENS-2687 · CLMEL26</title>
+  <meta name="description" content="Cisco NetDevOps CI/CD lab guide: build, test, stage and apply network configuration as code with Cisco CML, pyATS, Ansible and GitLab CI/CD.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d274d'/><text x='50' y='70' font-size='56' text-anchor='middle' fill='%2300bceb' font-family='Arial' font-weight='bold'>N</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/guide.css">
+</head>
+<body>
+  <div class="progress-bar" id="progress-bar" aria-hidden="true"></div>
+  <div class="layout">
+    <!-- Left: brand + tabs + section menu -->
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#top">
+        <span class="brand__logo">NA</span>
+        <span class="brand__text">
+          <span class="brand__title">NetDevOps Lab</span>
+          <span class="brand__sub">LTRENS-2687 · CLMEL26</span>
+        </span>
+      </a>
+
+      <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Toggle light and dark theme">
+        <span class="theme-toggle__icon" aria-hidden="true">☾</span>
+        <span class="theme-toggle__label">Dark</span>
+      </button>
+
+      <div class="tabs" id="tabs" role="tablist" aria-label="Guide sections"></div>
+      <nav class="menu" id="menu" aria-label="Sections in this tab"></nav>
+
+      <div class="sidebar__foot">
+        <a href="https://github.com/ranilf2005/clmel26_automation/tree/main/docs/content" target="_blank" rel="noopener">Edit content</a>
+        <a href="https://github.com/ranilf2005/clmel26_automation" target="_blank" rel="noopener">GitHub repo</a>
+      </div>
+    </aside>
+
+    <div class="backdrop" id="backdrop"></div>
+
+    <!-- Right: content -->
+    <div class="main">
+      <div class="topbar">
+        <button class="hamburger" id="hamburger" type="button" aria-label="Toggle navigation">☰</button>
+        <span class="topbar__title" id="topbar-title">Lab Guide</span>
+      </div>
+
+      <main class="content" id="content">
+        <a id="top"></a>
+        <header class="hero" id="hero">
+          <span class="hero__eyebrow">LTRENS-2687 · rebuilt for CLMEL26 / 2026</span>
+          <h1 class="hero__title">NetDevOps Automation — End-to-End Lab Guide</h1>
+          <p class="hero__lead">Network configuration described as code, tested automatically, and applied to real routers <strong>only when every test passes</strong>. The why, the how, every file, the runners, and each failure &amp; success path.</p>
+          <div class="hero__pills">
+            <span class="chip">GitLab CI/CD</span>
+            <span class="chip">GitHub Actions</span>
+            <span class="chip">pyATS / Genie</span>
+            <span class="chip">Ansible</span>
+            <span class="chip">Cisco CML</span>
+            <span class="chip">IOS &amp; IOS-XE</span>
+          </div>
+        </header>
+
+        <div id="panels">
+          <div class="loading" id="loading">
+            <span class="spinner" aria-hidden="true"></span> Loading lab guide…
+          </div>
+        </div>
+
+        <nav class="pager" id="pager" aria-label="Tab navigation"></nav>
+
+        <footer class="site-footer">
+          <p>LTRENS-2687 · NetDevOps Network Automation · Rebuilt for CLMEL26 (2026).
+          Rendered from Markdown in <a href="https://github.com/ranilf2005/clmel26_automation/tree/main/docs/content" target="_blank" rel="noopener">docs/content</a> ·
+          Source on <a href="https://github.com/ranilf2005/clmel26_automation" target="_blank" rel="noopener">GitHub</a>.</p>
+        </footer>
+      </main>
+    </div>
+  </div>
+
+  <button class="to-top" id="to-top" type="button" aria-label="Back to top" title="Back to top">↑</button>
+
+  <div class="zoom-overlay" id="zoom-overlay" role="dialog" aria-modal="true" aria-label="Enlarged diagram">
+    <button class="zoom-close" id="zoom-close" type="button" aria-label="Close">&times;</button>
+    <div class="zoom-overlay__inner" id="zoom-inner"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="assets/guide.js"></script>
+</body>
+</html>

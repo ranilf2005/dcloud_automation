@@ -1,0 +1,16 @@
+# GitLab Pages — publishes the lab guide as a static web page.
+# The runner is a docker executor, so we use a tiny alpine image to copy the
+# pre-rendered index.html (and the Markdown source) into ./public, which GitLab
+# Pages serves.
+pages:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - mkdir -p public
+    - cp index.html public/index.html
+    - cp LAB_GUIDE.md public/LAB_GUIDE.md
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'

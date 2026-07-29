@@ -1,0 +1,68 @@
+name: Ansible VLAN CI/CD
+
+# In this lab the whole pipeline runs on a SELF-HOSTED GitHub Actions runner
+# registered on the devbox (198.18.1.4) - the only host that can reach the CML
+# routers (csr1000v-0 198.18.1.6, iosv-1 198.18.1.7).
+#   validate -> Test/Dev stage: lint + schema asserts (no device needed)
+#   deploy   -> Production stage: gated by needs + main + environment approval
+on:
+  push:
+    paths:
+      - "ansible/**"
+      - ".github/workflows/ansible-vlan.yml"
+  pull_request:
+    paths:
+      - "ansible/**"
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: ansible
+
+jobs:
+  validate:
+    name: "Test / Dev - validate intent"
+    runs-on: [self-hosted, clmel]          # lab devbox 198.18.1.4
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure Ansible and linters
+        run: |
+          python3 -m pip install --user --upgrade "ansible-core>=2.16" ansible-lint yamllint
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.local/bin:$PATH"
+          ansible-galaxy collection install -r requirements.yml
+
+      - name: Lint YAML
+        run: yamllint .
+
+      - name: Lint playbooks
+        run: ansible-lint playbooks/
+
+      - name: Syntax check
+        run: ansible-playbook playbooks/configure_vlans.yml --syntax-check
+
+      - name: Validate VLAN and interface intent
+        run: ansible-playbook playbooks/validate_vlans.yml
+
+  deploy:
+    name: "Production - apply to routers"
+    needs: validate
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: [self-hosted, clmel]          # lab devbox 198.18.1.4 -> routers .6/.7
+    environment:
+      name: production
+      url: https://ranilf2005.github.io/clmel26_automation/
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure collections
+        run: ansible-galaxy collection install -r requirements.yml
+
+      - name: Pre-flight dry run (no changes)
+        run: ansible-playbook -i inventory/hosts.yml playbooks/configure_vlans.yml -e target=prod --check --diff
+
+      - name: Deploy VLANs to production
+        run: ansible-playbook -i inventory/hosts.yml playbooks/configure_vlans.yml -e target=prod

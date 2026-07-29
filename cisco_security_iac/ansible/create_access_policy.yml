@@ -1,0 +1,67 @@
+---
+# Create two network objects and an Access Control Policy whose ALLOW rule
+# permits traffic from inside to outside, via the FMC HTTP API.
+#
+# Uses the generic cisco.fmcansible.fmc_configuration module: each task calls an
+# FMC REST operation by name and can store its result with `register_as` for
+# reuse in later tasks.
+- name: "FMC — allow inside to outside"
+  hosts: fmc
+  connection: httpapi
+  gather_facts: false
+  vars:
+    inside_cidr: "198.18.1.0/24"
+    outside_cidr: "198.18.2.0/24"
+    acp_name: "inside-to-outside-policy"
+
+  tasks:
+    - name: Create the inside network object
+      cisco.fmcansible.fmc_configuration:
+        operation: createNetworkObject
+        data:
+          name: inside-net
+          value: "{{ inside_cidr }}"
+          type: Network
+        register_as: inside_net
+
+    - name: Create the outside network object
+      cisco.fmcansible.fmc_configuration:
+        operation: createNetworkObject
+        data:
+          name: outside-net
+          value: "{{ outside_cidr }}"
+          type: Network
+        register_as: outside_net
+
+    - name: Create the access control policy (default action BLOCK)
+      cisco.fmcansible.fmc_configuration:
+        operation: createAccessPolicy
+        data:
+          name: "{{ acp_name }}"
+          type: AccessPolicy
+          defaultAction:
+            action: BLOCK
+            type: AccessPolicyDefaultAction
+        register_as: access_policy
+
+    - name: Create the ALLOW rule (inside -> outside)
+      cisco.fmcansible.fmc_configuration:
+        operation: createAccessRule
+        path_params:
+          containerUUID: "{{ access_policy.id }}"
+        data:
+          name: allow-inside-to-outside
+          type: AccessRule
+          action: ALLOW
+          enabled: true
+          sourceNetworks:
+            objects:
+              - "{{ inside_net }}"
+          destinationNetworks:
+            objects:
+              - "{{ outside_net }}"
+        register_as: allow_rule
+
+    - name: Show the created policy
+      ansible.builtin.debug:
+        msg: "Created ACP '{{ acp_name }}' with an ALLOW rule inside -> outside."
