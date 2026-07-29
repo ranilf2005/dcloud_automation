@@ -264,6 +264,20 @@ flowchart LR
   gl -->|SSH · pyATS/Ansible| iosv
 ```
 
+**Physical CML topology.** The two *managed* routers — `iosv-1` (`198.18.1.7`) and
+`csr1000v-0` (`198.18.1.6`) — reach a shared target through the middle router
+`iosv-0`. That target, **`Loopback2 = 192.168.1.1` on `iosv-0`, is `shutdown` by
+default** — which is the fault you repair in the troubleshooting exercise (§1.7).
+
+```mermaid
+flowchart LR
+  ext[ext-conn-0] ---|G0/0| sw[iosvl2-0<br/>L2 switch]
+  sw ---|G0/1| iosv1[iosv-1<br/>G0/0 198.18.1.7]
+  sw ---|G0/2| csr[csr1000v-0<br/>G1 198.18.1.6]
+  iosv1 ---|G0/1 10.2.2.1 → 10.2.2.2 G0/0| iosv0
+  csr ---|G2 10.1.1.1 → 10.1.1.2 G0/1| iosv0[iosv-0 · middle router<br/>Loopback2 192.168.1.1<br/>shutdown by default]
+```
+
 ### 1.3 How the pipeline works
 
 ```mermaid
@@ -362,8 +376,8 @@ pyats run job jobs/smoke_job.py --testbed-file testbed/testbed.yaml
 ### 1.7 The troubleshooting exercise
 
 This lab ships **intentionally broken** so you can practise reading a pipeline
-failure. The interface that owns `192.168.1.1` (on the middle router `iosv-0`) is
-deliberately **shut down**.
+failure. The **`Loopback2`** interface that owns `192.168.1.1` (on the middle
+router `iosv-0`) is deliberately **`shutdown`**.
 
 **Expected first run — Case B (failure):**
 
@@ -381,7 +395,7 @@ NOT created on ANY device. Fix reachability and re-run the pipeline.
 2. Open the `iosv-0` console in CML and bring the interface up:
    ```
    configure terminal
-    interface <the interface that owns 192.168.1.1>
+    interface Loopback2
      no shutdown
     end
    write memory
