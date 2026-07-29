@@ -23,7 +23,7 @@ Read the full step-by-step training guide:
 
 | Service | Address | Credentials |
 |---------|---------|-------------|
-| code-server | `http://198.18.1.18:8080` | `C1sco12345` |
+| code-server | `https://198.18.1.18:8080` | `C1sco12345` |
 | GitLab | `http://198.18.1.18:8929` | `root / C1sco12345` |
 | Devbox | `198.18.1.4` | `cisco / C1sco12345` |
 | Cisco CML | `https://198.18.1.2` | `admin / C1sco12345` |

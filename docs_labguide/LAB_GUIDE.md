@@ -71,7 +71,7 @@ Everything runs on a workstation you can reach in the browser — no local insta
 
 | Service | URL / address | Credentials |
 |---------|---------------|-------------|
-| **code-server** (browser VS Code) | `http://198.18.1.18:8080` | password `C1sco12345` |
+| **code-server** (browser VS Code) | `https://198.18.1.18:8080` | password `C1sco12345` |
 | **GitLab** (CI/CD + Pages) | `http://198.18.1.18:8929` | `root` / `C1sco12345` |
 | Devbox (lab automation host) | `198.18.1.4` | `cisco` / `C1sco12345` |
 | Cisco CML (virtual topology) | `https://198.18.1.2` | `admin` / `C1sco12345` |
@@ -93,7 +93,7 @@ labs** happen here; there is nothing to install on your laptop.
 
 | Property | Value |
 |----------|-------|
-| URL | **http://198.18.1.18:8080** |
+| URL | **https://198.18.1.18:8080** (self-signed TLS — accept the warning once) |
 | Password | `C1sco12345` |
 | Version | code-server 4.129.0 (VS Code 1.129) |
 | Opens in | `/home/cisco/` with a dark theme |
@@ -106,8 +106,10 @@ and auto-completed out of the box.
 
 ### Sign in and get oriented
 
-1. Open **http://198.18.1.18:8080** in your browser and enter the password
-   `C1sco12345`.
+1. Open **https://198.18.1.18:8080** in your browser. It uses a **self-signed
+   certificate**, so accept the browser warning once (**Advanced ▸ Proceed to
+   198.18.1.18**). HTTPS is what makes **copy/paste and the clipboard** work in the
+   IDE. Then enter the password `C1sco12345`.
 2. The **Explorer** on the left opens on `/home/cisco/`. Hidden dot-files are
    hidden, so you only see your working folders — expand **`automation_projects/`**
    to find the two labs.
