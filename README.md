@@ -11,10 +11,13 @@ hands-on labs and the attendee lab guide.
 
 ## Start here
 
+**▶ Live lab guide (GitHub Pages): https://ranilf2005.github.io/dcloud_automation/**
+
 Read the full step-by-step training guide:
 
+- **Web (published):** https://ranilf2005.github.io/dcloud_automation/
 - **Markdown:** [`docs_labguide/LAB_GUIDE.md`](docs_labguide/LAB_GUIDE.md)
-- **HTML:** open `docs_labguide/index.html` (or the published GitLab Pages site)
+- **HTML (local):** open `docs_labguide/index.html`
 
 ## Lab environment (summary)
 
