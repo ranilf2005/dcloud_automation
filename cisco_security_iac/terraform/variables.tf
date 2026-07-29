@@ -23,15 +23,15 @@ variable "fmc_insecure" {
 }
 
 variable "inside_network_cidr" {
-  description = "Inside subnet in CIDR notation (FTD interface1 side)."
+  description = "Inside subnet in CIDR notation (dCloud FTD interface4 / inside side)."
   type        = string
-  default     = "198.18.1.0/24"
+  default     = "198.18.2.0/24"
 }
 
 variable "outside_network_cidr" {
-  description = "Outside subnet in CIDR notation (FTD interface4 side)."
+  description = "Outside subnet in CIDR notation (dCloud FTD interface1 / outside side)."
   type        = string
-  default     = "198.18.2.0/24"
+  default     = "198.18.1.0/24"
 }
 
 variable "acp_name" {

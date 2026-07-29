@@ -97,8 +97,8 @@ def parse_args(argv=None):
     ap.add_argument("--host", default=os.getenv("FMC_HOST", "198.18.1.10"))
     ap.add_argument("--username", default=os.getenv("FMC_USERNAME", "admin"))
     ap.add_argument("--password", default=os.getenv("FMC_PASSWORD"))
-    ap.add_argument("--inside-cidr", default="198.18.1.0/24")
-    ap.add_argument("--outside-cidr", default="198.18.2.0/24")
+    ap.add_argument("--inside-cidr", default="198.18.2.0/24")
+    ap.add_argument("--outside-cidr", default="198.18.1.0/24")
     ap.add_argument("--policy-name", default="inside-to-outside-policy")
     ap.add_argument("--verify-tls", action="store_true", help="Verify the FMC TLS certificate.")
     ap.add_argument(

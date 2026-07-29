@@ -12,6 +12,6 @@ fmc_insecure = true
 #   export TF_VAR_fmc_password='Cisco@123'
 # fmc_password = "Cisco@123"
 
-inside_network_cidr  = "198.18.1.0/24"
-outside_network_cidr = "198.18.2.0/24"
+inside_network_cidr  = "198.18.2.0/24"
+outside_network_cidr = "198.18.1.0/24"
 acp_name             = "inside-to-outside-policy"

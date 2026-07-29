@@ -18,9 +18,9 @@ Control Policy that allows traffic from inside to outside**:
 ## Lab topology
 
 ```
-inside (198.18.1.0/24)            outside (198.18.2.0/24)
+inside (198.18.2.0/24)            outside (198.18.1.0/24)
         │                                  │
-   FTD interface1  ───►  [ FTD ]  ───►  FTD interface4
+   FTD interface4  ───►  [ FTD ]  ───►  FTD interface1
                            ▲
                            │ managed by
                         [ FMC ]  (HTTPS / REST API 443)
@@ -28,12 +28,18 @@ inside (198.18.1.0/24)            outside (198.18.2.0/24)
 
 ### Addressing (as provided)
 
+**dCloud FMC/FTD** — outside `198.18.1.0/24`, inside `198.18.2.0/24`:
+
 | Role | Pair A (v7.6) | Pair B |
 |------|---------------|--------|
 | FMC management | `198.18.1.10` | `198.18.1.11` |
 | FTD management | `198.18.1.20` | `198.18.1.21` |
-| FTD interface1 (inside) | `198.18.1.12` | `198.18.1.15` |
-| FTD interface4 (outside) | `198.18.2.12` | `198.18.2.13` |
+| FTD interface1 (outside) | `198.18.1.12` | `198.18.1.15` |
+| FTD interface4 (inside) | `198.18.2.12` | `198.18.2.13` |
+
+**CML virtual lab** — outside `198.18.1.0/24`, inside `10.1.1.0/24`: FMC `198.18.1.22`,
+FTD mgmt `198.18.1.23`, FTD outside `198.18.1.24`, FTD inside `10.1.1.1`, inside
+hosts ubuntu-0 `10.1.1.4` / chrome-0 `10.1.1.2`.
 
 Credentials (FMC + FTD): user `admin`. The password is supplied out-of-band via
 environment variable and is **never** committed (see each scenario's README).
@@ -53,8 +59,8 @@ cd ansible && ansible-galaxy collection install -r requirements.yml && ansible-p
 
 ## What gets created (all three scenarios)
 
-1. Network object `inside-net` = `198.18.1.0/24`
-2. Network object `outside-net` = `198.18.2.0/24`
+1. Network object `inside-net` = `198.18.2.0/24`
+2. Network object `outside-net` = `198.18.1.0/24`
 3. Access Control Policy `inside-to-outside-policy` (default action `BLOCK`)
 4. Rule `allow-inside-to-outside` — action `ALLOW`, source `inside-net`,
    destination `outside-net`.

@@ -10,8 +10,8 @@
   connection: httpapi
   gather_facts: false
   vars:
-    inside_cidr: "198.18.1.0/24"
-    outside_cidr: "198.18.2.0/24"
+    inside_cidr: "198.18.2.0/24"
+    outside_cidr: "198.18.1.0/24"
     acp_name: "inside-to-outside-policy"
 
   tasks:

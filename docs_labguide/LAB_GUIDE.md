@@ -337,27 +337,55 @@ flowchart LR
   usw --- chrome[chrome-0<br/>10.1.1.2]
 ```
 
-*The FMC manages the FTD over the management network. Traffic flows through the FTD
-from the **inside** interface (interface1) to the **outside** interface (interface4).*
+*In the CML virtual lab above, the FMC manages the FTD over the management network
+(`198.18.1.x`). User traffic flows from the **inside** hosts (`10.1.1.0/24`) out
+through the FTD to the **outside** (`198.18.1.0/24`).*
 
-**Addressing used by the automation** (two FMC/FTD pairs are available):
+The security lab exists in two forms. In **both**, the **outside** network is
+`198.18.1.0/24`; the **inside** network differs.
+
+**CML virtual lab** — outside `198.18.1.0/24`, **inside `10.1.1.0/24`**:
+
+| CML node | Address |
+|----------|---------|
+| CML network0 / network1 | `198.18.1.2` / `198.18.1.3` |
+| fmcv (FMC) | `198.18.1.22` |
+| ftdv (FTD management) | `198.18.1.23` |
+| ftdv **outside** | `198.18.1.24` |
+| ftdv **inside** | `10.1.1.1` |
+| ubuntu-0 / chrome-0 (inside hosts) | `10.1.1.4` / `10.1.1.2` |
+
+**dCloud FMC/FTD** — outside `198.18.1.0/24`, **inside `198.18.2.0/24`** (two pairs;
+the IaC targets these):
 
 | Role | Pair A (v7.6) | Pair B |
 |------|---------------|--------|
 | FMC management | `198.18.1.10` | `198.18.1.11` |
 | FTD management | `198.18.1.20` | `198.18.1.21` |
-| FTD interface1 (**inside**) | `198.18.1.12` | `198.18.1.15` |
-| FTD interface4 (**outside**) | `198.18.2.12` | `198.18.2.13` |
+| FTD interface1 (**outside**) | `198.18.1.12` | `198.18.1.15` |
+| FTD interface4 (**inside**) | `198.18.2.12` | `198.18.2.13` |
 
-- **Inside network:** `198.18.1.0/24`  ·  **Outside network:** `198.18.2.0/24`
+**Other dCloud hosts:**
+
+| Host | Address | Notes |
+|------|---------|-------|
+| Ubuntu 26.04 LAN | `198.18.2.10` | inside host — change its gateway to FTD764 or FTD100 |
+| Ubuntu 26.04 (test) | `198.18.1.18` | workstation — code-server + lab GitLab |
+| Ubuntu 25.04 (CWS) | `198.18.1.4` | devbox |
+| Windows 11 | `198.18.1.8` | test client |
+
 - **Credentials:** `admin` / `Cisco@123` (both FMC and FTD)
+
+> The IaC creates its network objects using the **dCloud** networks: inside
+> `198.18.2.0/24` → outside `198.18.1.0/24`. To run against **CML** instead, point
+> the FMC URL at `198.18.1.22` and use inside `10.1.1.0/24`.
 
 ### 2.3 Three ways to do the same thing
 
 Every scenario produces the **same** four objects on the FMC:
 
-1. Network object `inside-net` = `198.18.1.0/24`
-2. Network object `outside-net` = `198.18.2.0/24`
+1. Network object `inside-net` = `198.18.2.0/24`
+2. Network object `outside-net` = `198.18.1.0/24`
 3. Access Control Policy `inside-to-outside-policy` (default action **BLOCK**)
 4. Rule `allow-inside-to-outside` — action **ALLOW**, source `inside-net`, destination `outside-net`
 
@@ -478,7 +506,7 @@ Folder `cisco_security_iac/ansible/`. Uses the **`cisco.fmcansible`** collection
 - name: Create the inside network object
   cisco.fmcansible.fmc_configuration:
     operation: createNetworkObject
-    data: { name: inside-net, value: "198.18.1.0/24", type: Network }
+    data: { name: inside-net, value: "198.18.2.0/24", type: Network }
     register_as: inside_net
 ```
 

@@ -7,9 +7,9 @@ from fmc_access_policy import (
 
 
 def test_network_payload():
-    p = build_network_payload("inside-net", "198.18.1.0/24", "d")
+    p = build_network_payload("inside-net", "198.18.2.0/24", "d")
     assert p["type"] == "Network"
-    assert p["value"] == "198.18.1.0/24"
+    assert p["value"] == "198.18.2.0/24"
     assert p["name"] == "inside-net"
     assert p["description"] == "d"
 

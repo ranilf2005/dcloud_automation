@@ -3,7 +3,7 @@
 Creates, on a Cisco Secure Firewall Management Center (FMC), using the
 [`CiscoDevNet/fmc`](https://registry.terraform.io/providers/CiscoDevNet/fmc/latest) provider (v2.x, tested against FMC 7.6):
 
-- two **network objects** (`inside-net` = `198.18.1.0/24`, `outside-net` = `198.18.2.0/24`)
+- two **network objects** (`inside-net` = `198.18.2.0/24`, `outside-net` = `198.18.1.0/24`)
 - two **security zones** (`inside-zone`, `outside-zone`)
 - an **Access Control Policy** (`inside-to-outside-policy`) whose default action is
   `BLOCK`, containing one rule that **ALLOWs** traffic from the inside zone/network
