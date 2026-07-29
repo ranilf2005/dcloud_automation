@@ -18,7 +18,8 @@
 
 1. [Before you begin](#before-you-begin)
 2. [Lab environment & access](#lab-environment--access)
-3. [Lab 1 — NetDevOps CI/CD](#lab-1--netdevops-cicd)
+3. [The codebase server IDE (code-server)](#the-codebase-server-ide-code-server)
+4. [Lab 1 — NetDevOps CI/CD](#lab-1--netdevops-cicd)
    - [1.1 Goals & concepts](#11-goals--concepts)
    - [1.2 Topology](#12-topology)
    - [1.3 How the pipeline works](#13-how-the-pipeline-works)
@@ -27,7 +28,7 @@
    - [1.6 Test scenarios — what & why](#16-test-scenarios--what--why)
    - [1.7 The troubleshooting exercise](#17-the-troubleshooting-exercise)
    - [1.8 Verification checklist](#18-verification-checklist)
-4. [Lab 2 — Cisco Security IaC (FMC/FTD)](#lab-2--cisco-security-iac-fmcftd)
+5. [Lab 2 — Cisco Security IaC (FMC/FTD)](#lab-2--cisco-security-iac-fmcftd)
    - [2.1 Goals & concepts](#21-goals--concepts)
    - [2.2 Topology & addressing](#22-topology--addressing)
    - [2.3 Three ways to do the same thing](#23-three-ways-to-do-the-same-thing)
@@ -36,9 +37,9 @@
    - [2.6 Ansible scenario](#26-ansible-scenario)
    - [2.7 Test cases — what & why](#27-test-cases--what--why)
    - [2.8 Verification checklist](#28-verification-checklist)
-5. [Appendix A — Credentials](#appendix-a--credentials)
-6. [Appendix B — Command cheat-sheet](#appendix-b--command-cheat-sheet)
-7. [Appendix C — Troubleshooting](#appendix-c--troubleshooting)
+6. [Appendix A — Credentials](#appendix-a--credentials)
+7. [Appendix B — Command cheat-sheet](#appendix-b--command-cheat-sheet)
+8. [Appendix C — Troubleshooting](#appendix-c--troubleshooting)
 
 ---
 
@@ -81,6 +82,58 @@ Everything runs on a workstation you can reach in the browser — no local insta
 > `~/automation_projects/`.
 
 Open a terminal in code-server (**Terminal ▸ New Terminal**) for every command below.
+
+---
+
+## The codebase server IDE (code-server)
+
+**code-server is your IDE for this entire training** — a full **Visual Studio Code
+running in your browser**. All editing, terminals, Git, and test runs for **both
+labs** happen here; there is nothing to install on your laptop.
+
+| Property | Value |
+|----------|-------|
+| URL | **http://198.18.1.18:8080** |
+| Password | `C1sco12345` |
+| Version | code-server 4.129.0 (VS Code 1.129) |
+| Opens in | `/home/cisco/` with a dark theme |
+| Projects | `~/automation_projects/clmel26_automation/` and `~/automation_projects/cisco_security_iac/` |
+
+**Pre-installed language support:** Python (Ruff, Black, Flake8, Mypy, debugpy),
+Ansible, Terraform / HCL, YAML, XML, JSON, Jinja2, HTML/CSS, Docker, GitLab
+Workflow, Markdown, and shell — so every file in these labs is highlighted, linted,
+and auto-completed out of the box.
+
+### Sign in and get oriented
+
+1. Open **http://198.18.1.18:8080** in your browser and enter the password
+   `C1sco12345`.
+2. The **Explorer** on the left opens on `/home/cisco/`. Hidden dot-files are
+   hidden, so you only see your working folders — expand **`automation_projects/`**
+   to find the two labs.
+3. Open the integrated terminal with **Terminal ▸ New Terminal** (or press
+   `` Ctrl+` ``). **Every command in this guide is run in this terminal.**
+
+### Make every change here (the "as code" loop)
+
+1. **Edit** an intent file — for example
+   `clmel26_automation/ansible/vars/vlans.yml` or a file under
+   `cisco_security_iac/` — and save with `Ctrl+S`.
+2. **Test / validate** from the integrated terminal (pyATS, `ansible-playbook`,
+   `terraform validate`, `pytest`, …).
+3. **Commit and push** using the built-in **Source Control** panel or `git` in the
+   terminal. In Lab 1 the push triggers the GitLab pipeline automatically.
+
+> Throughout this guide, whenever you read *"open a terminal"* or *"edit the
+> file"*, do it **in code-server**.
+
+```mermaid
+flowchart LR
+  E[Edit file<br/>in code-server] --> S[Save]
+  S --> T[Run tests in the<br/>integrated terminal]
+  T --> G[Commit + push<br/>Source Control]
+  G --> P[Pipeline runs]
+```
 
 ---
 
