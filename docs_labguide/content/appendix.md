@@ -1,7 +1,7 @@
 ---
 title: Appendix — Credentials, Cheat-sheet & Troubleshooting
 nav: Appendix
-order: 4
+order: 5
 eyebrow: Reference
 description: Credentials, a copy-paste command cheat-sheet, and a troubleshooting table for both labs.
 ---

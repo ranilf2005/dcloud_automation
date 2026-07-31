@@ -75,6 +75,13 @@ a:hover{text-decoration:underline}
 .content h1,.content h2,.content h3,.content h4{position:relative}
 .mermaid{background:#ffffff;border-radius:12px;padding:18px;margin:1.4em 0;text-align:center;
   box-shadow:var(--shadow);overflow:auto}
+/* ---- screenshots ---- */
+.content img{max-width:100%;height:auto;display:block;margin:1.2em 0 .4em;
+  border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);background:#fff}
+.content img+em{display:block;color:var(--muted);font-size:.86rem;line-height:1.5;
+  margin:0 0 1.6em;text-align:center}
+.content figure{margin:1.4em 0}
+.content figcaption{color:var(--muted);font-size:.86rem;text-align:center;margin-top:.5em}
 /* ---- nav cards (home page) ---- */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:1.6em 0}
 .card{display:flex;flex-direction:column;gap:6px;padding:18px 18px 16px;background:var(--panel);
@@ -100,7 +107,7 @@ a:hover{text-decoration:underline}
 <aside class="sidebar" id="sidebar">
   <a class="brand" href="index.html">dCloud<span class="dot">.</span>Automation<small>Training Lab Guide</small></a>
   <div class="nav-label">Guide</div>
-  <nav id="pages" aria-label="Pages"><a class="page-link" href="index.html">Home</a><a class="page-link" href="lab1-netdevops.html">Lab 1 · NetDevOps</a><a class="page-link" href="lab2-security-iac.html">Lab 2 · Security IaC</a><a class="page-link active" href="appendix.html">Appendix</a></nav>
+  <nav id="pages" aria-label="Pages"><a class="page-link" href="index.html">Home</a><a class="page-link" href="lab1-netdevops.html">Lab 1 · NetDevOps</a><a class="page-link" href="lab1-hands-on.html">Lab 1 · Hands-on steps</a><a class="page-link" href="lab2-security-iac.html">Lab 2 · Security IaC</a><a class="page-link active" href="appendix.html">Appendix</a></nav>
   <div class="nav-label">On this page</div>
   <nav id="toc" aria-label="Contents"></nav>
   <button class="theme-toggle" id="theme-toggle">&#9788; Toggle light / dark</button>

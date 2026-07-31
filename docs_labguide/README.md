@@ -15,10 +15,13 @@ automatically (no need to touch any HTML).
 | Path | Purpose |
 |------|---------|
 | [`content/index.md`](content/index.md) | **Home** — overview, lab access, code-server IDE, nav cards |
-| [`content/lab1-netdevops.md`](content/lab1-netdevops.md) | **Lab 1** — NetDevOps CI/CD |
+| [`content/lab1-netdevops.md`](content/lab1-netdevops.md) | **Lab 1** — NetDevOps CI/CD (concepts) |
+| [`content/lab1-hands-on.md`](content/lab1-hands-on.md) | **Lab 1** — illustrated step-by-step walkthrough |
 | [`content/lab2-security-iac.md`](content/lab2-security-iac.md) | **Lab 2** — Cisco Security IaC (FMC/FTD) |
 | [`content/appendix.md`](content/appendix.md) | **Appendix** — credentials, cheat-sheet, troubleshooting |
+| [`images/`](images/) | **All screenshots / pictures** live here (see below) |
 | `build_html.py` | Renders every `content/*.md` into a self-contained `<slug>.html` |
+| `tools/paste_image.py` | Clipboard → save into `images/` → insert the Markdown link |
 | `*.html` | Generated pages (built by the workflow / `build_html.py`) |
 | `../.github/workflows/pages.yml` | Runs the build and deploys to GitHub Pages on push |
 
@@ -28,6 +31,42 @@ automatically (no need to touch any HTML).
 2. Commit and push to `main`.
 3. The **Deploy Lab Guide to GitHub Pages** workflow runs `build_html.py` and
    republishes — the live page updates in a minute or two.
+
+## Images & screenshots
+
+**All pictures live in [`images/`](images/).** Save any new screenshot there and
+reference it from Markdown as `images/<file>` — for example:
+
+```markdown
+![What the screenshot shows](images/lab1-hands-on-12.png)
+*Figure 12 — an optional italic caption under the image.*
+```
+
+> **Why `images/<file>` and not `../images/<file>`?** You author pages in
+> `content/`, but the builder renders each page to `docs_labguide/<slug>.html`
+> (one level up), right next to the `images/` folder. So image links are written
+> **relative to the built page** (`images/...`), not to the Markdown file.
+
+### Paste from the clipboard (no manual paths)
+
+Instead of typing paths, copy an image (a screenshot, or an image file in the
+file manager) and run the helper — it saves the image into `images/` with an
+auto-numbered name and inserts the correct `![...](images/...)` link for you:
+
+```bash
+# one-time install
+pip install -r tools/requirements.txt
+
+# copy a screenshot to the clipboard, then:
+python tools/paste_image.py --page lab1-hands-on --caption "CML dashboard"
+```
+
+- `--page <slug>` picks the target page (default: the most recently edited
+  `content/*.md`). Use `--file <path>` to point at a specific file.
+- The image is saved as `images/<page>-NN.png` (auto-incrementing).
+- The link is inserted just before a `<!-- paste-image -->` marker if the page
+  has one, otherwise appended at the end. Move it where you want it.
+- `--no-insert` just saves the file and prints the snippet.
 
 ## Front-matter
 

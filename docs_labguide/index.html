@@ -75,6 +75,13 @@ a:hover{text-decoration:underline}
 .content h1,.content h2,.content h3,.content h4{position:relative}
 .mermaid{background:#ffffff;border-radius:12px;padding:18px;margin:1.4em 0;text-align:center;
   box-shadow:var(--shadow);overflow:auto}
+/* ---- screenshots ---- */
+.content img{max-width:100%;height:auto;display:block;margin:1.2em 0 .4em;
+  border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);background:#fff}
+.content img+em{display:block;color:var(--muted);font-size:.86rem;line-height:1.5;
+  margin:0 0 1.6em;text-align:center}
+.content figure{margin:1.4em 0}
+.content figcaption{color:var(--muted);font-size:.86rem;text-align:center;margin-top:.5em}
 /* ---- nav cards (home page) ---- */
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:1.6em 0}
 .card{display:flex;flex-direction:column;gap:6px;padding:18px 18px 16px;background:var(--panel);
@@ -100,7 +107,7 @@ a:hover{text-decoration:underline}
 <aside class="sidebar" id="sidebar">
   <a class="brand" href="index.html">dCloud<span class="dot">.</span>Automation<small>Training Lab Guide</small></a>
   <div class="nav-label">Guide</div>
-  <nav id="pages" aria-label="Pages"><a class="page-link active" href="index.html">Home</a><a class="page-link" href="lab1-netdevops.html">Lab 1 · NetDevOps</a><a class="page-link" href="lab2-security-iac.html">Lab 2 · Security IaC</a><a class="page-link" href="appendix.html">Appendix</a></nav>
+  <nav id="pages" aria-label="Pages"><a class="page-link active" href="index.html">Home</a><a class="page-link" href="lab1-netdevops.html">Lab 1 · NetDevOps</a><a class="page-link" href="lab1-hands-on.html">Lab 1 · Hands-on steps</a><a class="page-link" href="lab2-security-iac.html">Lab 2 · Security IaC</a><a class="page-link" href="appendix.html">Appendix</a></nav>
   <div class="nav-label">On this page</div>
   <nav id="toc" aria-label="Contents"></nav>
   <button class="theme-toggle" id="theme-toggle">&#9788; Toggle light / dark</button>
@@ -121,7 +128,7 @@ a:hover{text-decoration:underline}
 > | 1 | **NetDevOps CI/CD** — routers as code | pyATS · Ansible · GitLab CI/CD | `clmel26_automation/` |
 > | 2 | **Cisco Security IaC** — FMC/FTD firewall as code | Terraform · REST API · Ansible | `cisco_security_iac/` |
 
-<div class="cards"><a class="card" href="lab1-netdevops.html"><span class="card-eyebrow">Lab 1</span><span class="card-title">Lab 1 · NetDevOps</span><span class="card-desc">Routers as code — a GitLab pipeline (pyATS · Ansible) that only configures devices when tests pass.</span><span class="card-go">Open →</span></a><a class="card" href="lab2-security-iac.html"><span class="card-eyebrow">Lab 2</span><span class="card-title">Lab 2 · Security IaC</span><span class="card-desc">FMC/FTD firewall as code — the same access policy three ways, with Terraform, REST API, and Ansible.</span><span class="card-go">Open →</span></a><a class="card" href="appendix.html"><span class="card-eyebrow">Reference</span><span class="card-title">Appendix</span><span class="card-desc">Credentials, a copy-paste command cheat-sheet, and a troubleshooting table for both labs.</span><span class="card-go">Open →</span></a></div>
+<div class="cards"><a class="card" href="lab1-netdevops.html"><span class="card-eyebrow">Lab 1</span><span class="card-title">Lab 1 · NetDevOps</span><span class="card-desc">Routers as code — a GitLab pipeline (pyATS · Ansible) that only configures devices when tests pass.</span><span class="card-go">Open →</span></a><a class="card" href="lab1-hands-on.html"><span class="card-eyebrow">Lab 1 · Walkthrough</span><span class="card-title">Lab 1 · Hands-on steps</span><span class="card-desc">A fully illustrated, numbered walkthrough — start the lab, build the GitLab project, run the pipeline, and troubleshoot it to a green run.</span><span class="card-go">Open →</span></a><a class="card" href="lab2-security-iac.html"><span class="card-eyebrow">Lab 2</span><span class="card-title">Lab 2 · Security IaC</span><span class="card-desc">FMC/FTD firewall as code — the same access policy three ways, with Terraform, REST API, and Ansible.</span><span class="card-go">Open →</span></a><a class="card" href="appendix.html"><span class="card-eyebrow">Reference</span><span class="card-title">Appendix</span><span class="card-desc">Credentials, a copy-paste command cheat-sheet, and a troubleshooting table for both labs.</span><span class="card-go">Open →</span></a></div>
 
 ---
 

@@ -10,6 +10,10 @@ description: Routers as code — a GitLab pipeline (pyATS · Ansible) that only 
 
 > **Tech:** pyATS · Ansible · GitLab CI/CD — folder `clmel26_automation/`.
 > New here? Start on the [Home](index.html) page for lab access and the code-server IDE.
+>
+> 👉 **Ready to do the lab?** This page explains *how the pipeline works*. For the
+> fully illustrated, click-by-click instructions, go to the
+> **[Lab 1 — Hands-on Walkthrough](lab1-hands-on.html)**.
 
 ## 1.1 Goals & concepts
 

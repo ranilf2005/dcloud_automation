@@ -1,0 +1,2 @@
+# Authoring helper dependencies for docs_labguide/tools/paste_image.py
+Pillow>=10.0
