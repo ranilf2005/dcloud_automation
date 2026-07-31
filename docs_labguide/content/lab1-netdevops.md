@@ -16,6 +16,127 @@ description: Routers as code — a GitLab pipeline (pyATS · Ansible) that only 
 > fully illustrated, click-by-click instructions, go to the
 > **[Lab 1 — Hands-on Walkthrough](lab1-hands-on.html)**.
 
+## What this lab is about (the big picture)
+
+In this lab you use a **GitLab CI/CD pipeline as a test & change-management
+framework** for network configuration. The idea is simple but powerful:
+
+> **Every change is described as code, automatically tested, and only allowed to
+> reach production once every test passes.**
+
+**What are we actually testing?** Before any router is changed, the pipeline checks
+that the change is *correct* and *safe*:
+
+- ✅ **Intent is valid** — the requested config (e.g. VLAN IDs, names, interfaces)
+  follows the rules *before* it is ever sent to a device.
+- ✅ **The network is reachable & healthy** — the target devices respond and the
+  routing state is what we expect.
+- ✅ **The change is idempotent** — running it twice does no harm (no duplicates).
+- ✅ **Only then deploy** — configuration is applied to production devices *only*
+  after all of the above pass.
+
+**Why this matters — no more manual mistakes.** In a traditional workflow an engineer
+logs into a device and types commands by hand — one typo can take down a site.
+With this framework:
+
+- 🚫 Engineers **do not** make changes directly on production devices.
+- 🧪 Every change is first proven on a **test bed** (here, virtual routers in Cisco CML).
+- 🚦 The pipeline is a **gate**: a change that fails *any* test is **blocked** and
+  **never reaches production**.
+- 👀 Every change is a Git commit — **reviewable, versioned, and auditable**.
+
+```mermaid
+flowchart LR
+  A["Engineer describes<br/>change as code"] --> B["Commit + push<br/>to GitLab"]
+  B --> C{"CI/CD pipeline<br/>runs all tests"}
+  C -->|any test fails| D["🚫 BLOCKED<br/>fix on the test bed"]
+  D --> A
+  C -->|all tests pass| E["✅ Deploy to<br/>production"]
+```
+
+## The framework — how the pipeline gates a change
+
+The pipeline (defined in `.gitlab-ci.yml`) runs in **ordered stages**. A later stage
+only runs if the earlier one **passed** — so a broken change stops at the first gate
+and everything after it is skipped.
+
+| Stage | Name | What it does | If it fails |
+|-------|------|--------------|-------------|
+| 1 | **validate** | Checks the *intent* offline (VLAN IDs/names/interfaces) — no device is touched | Pipeline **stops**; nothing else runs |
+| 2 | **network_check** | Talks to the routers: ping the target, verify routing, create Loopback3 | Pipeline **stops**; production is **not** touched |
+| 3 | **deploy** | Applies the change to production routers — **manual** button | Only reachable when 1 & 2 pass |
+
+> **Key rule:** stages are **sequential gates**. `Stage 2` must *wait for* `Stage 1`.
+> If they run independently, a broken change could slip past Stage 1 — which is
+> exactly the first bug you fix in this lab.
+
+## What you'll do — high-level tasks
+
+Here is the whole lab at a glance. Each task is explained in detail further down and
+shown click-by-click in the **[Hands-on Walkthrough](lab1-hands-on.html)**.
+
+1. **Create a GitLab project** — the home for your network-as-code repository.
+2. **Clone the repo to the local server** (code-server) — your working copy.
+3. **Add the project files** — create them, or copy them from the solution folder.
+4. **Commit & push to GitLab** — the push automatically **triggers the pipeline**.
+5. **First run → pipeline FAILS.** Stage 1 (validate) fails, **but** Stage 2 still
+   ran and passed — because the stages were **not gated** correctly.
+6. **Fix the gating** — make Stage 2 *depend on* Stage 1, so that **if Stage 1
+   fails, the whole pipeline stops** and nothing proceeds. (Re-run to confirm.)
+7. **Fix the Stage 1 issue** (an invalid VLAN) and commit again → now **Stage 1
+   passes, Stage 2 fails** — the pipeline has caught a *real* network fault.
+8. **Troubleshoot & fix the Stage 2 issue** (a network problem on a device), then
+   commit and re-run.
+9. **All stages pass** ✅ — the change is proven safe and is ready to deploy to
+   production.
+
+**The point of the two deliberate failures:** you learn to *read a pipeline failure*,
+understand *why the gate stopped the change*, and fix it — the exact skill you need
+to run this safely at work.
+
+## Pass / fail — what happens on each run
+
+As you work through the lab, the same push produces different results. This is the
+framework doing its job — **catching problems on the test bed, never in production.**
+
+```mermaid
+flowchart TD
+  push["git push"] --> s1{"Stage 1<br/>validate<br/>(intent OK?)"}
+  s1 -->|FAIL| stop1["🚫 Pipeline STOPS<br/>nothing is configured"]
+  s1 -->|PASS| s2{"Stage 2<br/>network_check<br/>(reachable & healthy?)"}
+  s2 -->|FAIL| stop2["🚫 Pipeline STOPS<br/>production untouched"]
+  s2 -->|PASS| dep["✅ Stage 3 deploy<br/>(manual) → production"]
+```
+
+| Run | Stage 1 · validate | Stage 2 · network_check | Pipeline result | What it teaches |
+|-----|--------------------|-------------------------|-----------------|-----------------|
+| **1 — first push** | ❌ FAIL (bad VLAN) | ⚠️ PASS (ran independently) | ❌ **FAILED** | Stages weren't gated — a broken change slipped past Stage 1 |
+| **2 — after gating fix** | ❌ FAIL (bad VLAN) | ⏭️ SKIPPED | ❌ **FAILED** | Now a Stage 1 failure **stops** the whole pipeline |
+| **3 — after fixing the VLAN** | ✅ PASS | ❌ FAIL (can't reach target) | ❌ **FAILED** | Stage 2 catches a *real* network fault before production |
+| **4 — after fixing the network** | ✅ PASS | ✅ PASS | ✅ **SUCCESS** | Change is proven safe → ready to deploy |
+
+## What you'll learn (and take back to your company)
+
+By the end you'll be able to run **infrastructure as code** with automated
+guardrails — and apply the same pattern to your own company's network:
+
+- 🧩 **Describe network changes as code** (YAML/Ansible/pyATS) instead of typing on devices.
+- 🧪 **Test every change automatically** on a test bed before it touches production.
+- 🚦 **Gate production behind passing tests** using ordered CI/CD stages.
+- 🔎 **Read and troubleshoot a pipeline failure** and fix it fast.
+- ♻️ **Make changes idempotent and repeatable** across many devices.
+
+**Business benefits of this approach:**
+
+- ✅ **Fewer outages** — mistakes are caught in minutes on the test bed, not in a production incident.
+- ✅ **No risky manual CLI** — engineers can't accidentally break production; the gate protects it.
+- ✅ **Full audit trail** — every change is a reviewable, versioned Git commit (who changed what, when, and why).
+- ✅ **Fast, safe rollback** — revert a commit to undo a change.
+- ✅ **Consistency at scale** — the same tested config is applied everywhere; no config drift.
+- ✅ **Repeatable & scalable** — the same pattern works for 2 devices or 2,000.
+
+---
+
 ## 1.1 Goals & concepts
 
 You will run a GitLab pipeline that validates a change against **virtual routers**
