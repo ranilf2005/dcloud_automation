@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>dCloud Automation — Training Lab Guide</title>
-<meta name="description" content="Overview, lab access, and the code-server IDE — begin here, then pick a lab.">
+<title>Appendix — Credentials, Cheat-sheet &amp; Troubleshooting</title>
+<meta name="description" content="Credentials, a copy-paste command cheat-sheet, and a troubleshooting table for both labs.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d274d'/><text x='50' y='72' font-size='60' text-anchor='middle' fill='%2300bceb' font-family='Arial' font-weight='bold'>d</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
 <style>
@@ -100,124 +100,54 @@ a:hover{text-decoration:underline}
 <aside class="sidebar" id="sidebar">
   <a class="brand" href="index.html">dCloud<span class="dot">.</span>Automation<small>Training Lab Guide</small></a>
   <div class="nav-label">Guide</div>
-  <nav id="pages" aria-label="Pages"><a class="page-link active" href="index.html">Home</a><a class="page-link" href="lab1-netdevops.html">Lab 1 · NetDevOps</a><a class="page-link" href="lab2-security-iac.html">Lab 2 · Security IaC</a><a class="page-link" href="appendix.html">Appendix</a></nav>
+  <nav id="pages" aria-label="Pages"><a class="page-link" href="index.html">Home</a><a class="page-link" href="lab1-netdevops.html">Lab 1 · NetDevOps</a><a class="page-link" href="lab2-security-iac.html">Lab 2 · Security IaC</a><a class="page-link active" href="appendix.html">Appendix</a></nav>
   <div class="nav-label">On this page</div>
   <nav id="toc" aria-label="Contents"></nav>
   <button class="theme-toggle" id="theme-toggle">&#9788; Toggle light / dark</button>
 </aside>
 <main class="content markdown-body" id="content"></main>
 
-<script id="md" type="text/markdown"># dCloud Automation — Training Lab Guide
+<script id="md" type="text/markdown"># Appendix
 
-> **Audience:** Network & security engineers attending the automation labs.
-> **What you'll learn:** How to build, test, and deploy network **and** firewall
-> configuration *as code*, with automated guardrails so a change only reaches a
-> device when every test passes.
->
-> This guide covers **two labs**:
->
-> | # | Lab | Tech | Folder |
-> |---|-----|------|--------|
-> | 1 | **NetDevOps CI/CD** — routers as code | pyATS · Ansible · GitLab CI/CD | `clmel26_automation/` |
-> | 2 | **Cisco Security IaC** — FMC/FTD firewall as code | Terraform · REST API · Ansible | `cisco_security_iac/` |
+> Quick reference for both labs. See [Home](index.html) for lab access,
+> [Lab 1](lab1-netdevops.html), and [Lab 2](lab2-security-iac.html).
 
-<div class="cards"><a class="card" href="lab1-netdevops.html"><span class="card-eyebrow">Lab 1</span><span class="card-title">Lab 1 · NetDevOps</span><span class="card-desc">Routers as code — a GitLab pipeline (pyATS · Ansible) that only configures devices when tests pass.</span><span class="card-go">Open →</span></a><a class="card" href="lab2-security-iac.html"><span class="card-eyebrow">Lab 2</span><span class="card-title">Lab 2 · Security IaC</span><span class="card-desc">FMC/FTD firewall as code — the same access policy three ways, with Terraform, REST API, and Ansible.</span><span class="card-go">Open →</span></a><a class="card" href="appendix.html"><span class="card-eyebrow">Reference</span><span class="card-title">Appendix</span><span class="card-desc">Credentials, a copy-paste command cheat-sheet, and a troubleshooting table for both labs.</span><span class="card-go">Open →</span></a></div>
+## Appendix A — Credentials
 
----
+| System | User | Password |
+|--------|------|----------|
+| code-server / GitLab / devbox / CML | see the [Home access table](index.html#lab-environment--access) | `C1sco12345` |
+| Routers `csr1000v-0` / `iosv-1` | `admin` | `C1sco12345` |
+| FMC & FTD | `admin` | `Cisco@123` |
 
-## Before you begin
+> Secrets are **never** committed. Terraform reads `TF_VAR_fmc_password`, the REST
+> script reads `FMC_PASSWORD`, and Ansible reads `FMC_PASSWORD` (or `ansible-vault`).
 
-**Prerequisites**
+## Appendix B — Command cheat-sheet
 
-- Basic familiarity with the CLI, Git, and Cisco IOS / firewall concepts.
-- No prior Terraform/Ansible/pyATS experience required — every command is given.
+```bash
+# ---- Lab 1: NetDevOps ----
+cd ~/automation_projects/clmel26_automation && source .venv/bin/activate
+ansible-playbook ansible/playbooks/validate_vlans.yml        # offline intent check
+pyats run job jobs/smoke_job.py --testbed-file testbed/testbed.yaml   # on devbox
 
-**Golden rule of this training:** *infrastructure as code*. You never log in to a
-device and type commands by hand (except for the one deliberate troubleshooting
-step in Lab 1). Instead you **describe intent in a file**, a pipeline **tests** it,
-and only a passing test is **applied** to the device.
-
-```mermaid
-flowchart LR
-  A[Describe intent<br/>in a file] --> B[Automated test]
-  B -->|pass| C[Apply to device]
-  B -->|fail| D[Stop · fix · retry]
-  D --> A
+# ---- Lab 2: Security IaC ----
+cd ~/automation_projects/cisco_security_iac && source .venv/bin/activate
+( cd terraform && terraform init && terraform validate )     # Terraform
+python rest_api/fmc_access_policy.py --dry-run && ( cd rest_api && pytest )   # REST
+( cd ansible && ansible-galaxy collection install -r requirements.yml \
+  && ansible-playbook create_access_policy.yml --syntax-check )              # Ansible
 ```
 
----
+## Appendix C — Troubleshooting
 
-## Lab environment & access
-
-Everything runs on a workstation you can reach in the browser — no local install.
-
-| Service | URL / address | Credentials |
-|---------|---------------|-------------|
-| **code-server** (browser VS Code) | `https://198.18.1.18:8080` | password `C1sco12345` |
-| **GitLab** (CI/CD + Pages) | `http://198.18.1.18:8929` | `root` / `C1sco12345` |
-| Devbox (lab automation host) | `198.18.1.4` | `cisco` / `C1sco12345` |
-| Cisco CML (virtual topology) | `https://198.18.1.2` | `admin` / `C1sco12345` |
-
-> **Tip:** Open **code-server** first. It opens straight into `/home/cisco/` with a
-> dark theme and all language extensions (Python, Ansible, Terraform, YAML, XML,
-> Jinja, JSON, HTML …) pre-installed. Both lab folders live under
-> `~/automation_projects/`.
-
-Open a terminal in code-server (**Terminal ▸ New Terminal**) for every command below.
-
----
-
-## The codebase server IDE (code-server)
-
-**code-server is your IDE for this entire training** — a full **Visual Studio Code
-running in your browser**. All editing, terminals, Git, and test runs for **both
-labs** happen here; there is nothing to install on your laptop.
-
-| Property | Value |
-|----------|-------|
-| URL | **https://198.18.1.18:8080** (self-signed TLS — accept the warning once) |
-| Password | `C1sco12345` |
-| Version | code-server 4.129.0 (VS Code 1.129) |
-| Opens in | `/home/cisco/` with a dark theme |
-| Projects | `~/automation_projects/clmel26_automation/` and `~/automation_projects/cisco_security_iac/` |
-
-**Pre-installed language support:** Python (Ruff, Black, Flake8, Mypy, debugpy),
-Ansible, Terraform / HCL, YAML, XML, JSON, Jinja2, HTML/CSS, Docker, GitLab
-Workflow, Markdown, and shell — so every file in these labs is highlighted, linted,
-and auto-completed out of the box.
-
-### Sign in and get oriented
-
-1. Open **https://198.18.1.18:8080** in your browser. It uses a **self-signed
-   certificate**, so accept the browser warning once (**Advanced ▸ Proceed to
-   198.18.1.18**). HTTPS is what makes **copy/paste and the clipboard** work in the
-   IDE. Then enter the password `C1sco12345`.
-2. The **Explorer** on the left opens on `/home/cisco/`. Hidden dot-files are
-   hidden, so you only see your working folders — expand **`automation_projects/`**
-   to find the two labs.
-3. Open the integrated terminal with **Terminal ▸ New Terminal** (or press
-   `` Ctrl+` ``). **Every command in this guide is run in this terminal.**
-
-### Make every change here (the "as code" loop)
-
-1. **Edit** an intent file — for example
-   `clmel26_automation/ansible/vars/vlans.yml` or a file under
-   `cisco_security_iac/` — and save with `Ctrl+S`.
-2. **Test / validate** from the integrated terminal (pyATS, `ansible-playbook`,
-   `terraform validate`, `pytest`, …).
-3. **Commit and push** using the built-in **Source Control** panel or `git` in the
-   terminal. In Lab 1 the push triggers the GitLab pipeline automatically.
-
-> Throughout this guide, whenever you read *"open a terminal"* or *"edit the
-> file"*, do it **in code-server**.
-
-```mermaid
-flowchart LR
-  E[Edit file<br/>in code-server] --> S[Save]
-  S --> T[Run tests in the<br/>integrated terminal]
-  T --> G[Commit + push<br/>Source Control]
-  G --> P[Pipeline runs]
-```
+| Symptom | Likely cause | Fix |
+|---------|--------------|-----|
+| Pipeline fails at ping `192.168.1.1` | **Intentional** — interface on `iosv-0` is shut | `no shutdown` it (Lab 1.7) |
+| `terraform init` can't download provider | No internet from host | Check proxy / registry reachability |
+| pyATS SSH fails to a router | Legacy KEX/host-key | Already handled in `testbed.yaml` `ssh_options` |
+| Ansible/REST auth error | Wrong `FMC_PASSWORD` | `export FMC_PASSWORD='Cisco@123'` |
+| code-server hidden files showing | — | `files.exclude` hides dotfiles; reload the tab |
 </script>
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>

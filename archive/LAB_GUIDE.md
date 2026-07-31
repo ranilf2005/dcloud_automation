@@ -1,3 +1,9 @@
+<!--
+ARCHIVED — this single-file guide has been superseded by the multi-page site.
+The live source now lives in docs_labguide/content/*.md (Home, Lab 1, Lab 2,
+Appendix) and is published automatically to GitHub Pages. Kept here for reference.
+-->
+
 # dCloud Automation — Training Lab Guide
 
 > **Audience:** Network & security engineers attending the automation labs.
