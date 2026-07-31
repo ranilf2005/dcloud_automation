@@ -19,11 +19,17 @@ automatically (no need to touch any HTML).
 | [`content/lab1-hands-on.md`](content/lab1-hands-on.md) | **Lab 1** — illustrated step-by-step walkthrough |
 | [`content/lab2-security-iac.md`](content/lab2-security-iac.md) | **Lab 2** — Cisco Security IaC (FMC/FTD) |
 | [`content/appendix.md`](content/appendix.md) | **Appendix** — credentials, cheat-sheet, troubleshooting |
+| `content/appendix-lab1-files.md` | **Lab 1 project files** — every script in full (generated, see below) |
+| `content/appendix-lab2-files.md` | **Lab 2 project files** — every script in full (generated, see below) |
 | [`images/`](images/) | **All screenshots / pictures** live here (see below) |
 | `build_html.py` | Renders every `content/*.md` into a self-contained `<slug>.html` |
 | `tools/paste_image.py` | Clipboard → save into `images/` → insert the Markdown link |
+| `tools/build_file_appendices.py` | Generates the two "project files" appendices from the real source |
 | `*.html` | Generated pages (built by the workflow / `build_html.py`) |
 | `../.github/workflows/pages.yml` | Runs the build and deploys to GitHub Pages on push |
+
+Every code block on the site gets a **Copy** button automatically (added by
+`build_html.py`) — hover a block to reveal it.
 
 ## Edit a page
 
@@ -67,6 +73,20 @@ python tools/paste_image.py --page lab1-hands-on --caption "CML dashboard"
 - The link is inserted just before a `<!-- paste-image -->` marker if the page
   has one, otherwise appended at the end. Move it where you want it.
 - `--no-insert` just saves the file and prints the snippet.
+
+## Project-files appendices (generated)
+
+`content/appendix-lab1-files.md` and `content/appendix-lab2-files.md` are **not**
+hand-edited — they are generated from the actual lab source (`../clmel26_automation/`
+and `../cisco_security_iac/`) so they never drift from what students run. Each file
+is shown in full in a highlighted, copy-buttoned code block.
+
+Regenerate them whenever a lab script changes, then rebuild:
+
+```bash
+python tools/build_file_appendices.py   # rewrites the two appendix-*-files.md pages
+python build_html.py                     # re-render the site
+```
 
 ## Front-matter
 

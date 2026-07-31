@@ -9,6 +9,10 @@ on:
     paths:
       - "docs_labguide/**"
       - ".github/workflows/pages.yml"
+      # The "project files" appendices are generated from the lab source, so a
+      # change to either lab's scripts should also rebuild and republish.
+      - "clmel26_automation/**"
+      - "cisco_security_iac/**"
   workflow_dispatch:
 
 # Least-privilege permissions required to deploy to Pages.
@@ -36,6 +40,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
+
+      - name: Regenerate the project-files appendices from the lab source
+        run: python tools/build_file_appendices.py
+        working-directory: docs_labguide
 
       - name: Build HTML from the content/*.md pages
         run: python build_html.py

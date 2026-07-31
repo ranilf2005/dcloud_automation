@@ -167,9 +167,18 @@ a:hover{text-decoration:underline}
 .content li{margin:.28em 0}
 .content code{background:var(--code-bg);color:#e6edf3;padding:.15em .4em;border-radius:5px;font-size:.86em;
   font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-.content pre{background:var(--code-bg);border:1px solid var(--border);border-radius:12px;
+.content pre{position:relative;background:var(--code-bg);border:1px solid var(--border);border-radius:12px;
   padding:16px 18px;overflow:auto;box-shadow:var(--shadow)}
 .content pre code{background:none;padding:0;font-size:.85rem;line-height:1.55}
+/* ---- copy button on code blocks ---- */
+.copy-btn{position:absolute;top:8px;right:8px;z-index:2;padding:4px 11px;font-size:.72rem;
+  font-weight:700;letter-spacing:.02em;color:var(--muted);background:var(--panel2);
+  border:1px solid var(--border);border-radius:7px;cursor:pointer;opacity:.55;
+  transition:opacity .12s,color .12s,border-color .12s;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+.content pre:hover .copy-btn{opacity:1}
+.copy-btn:hover{color:var(--text);border-color:var(--accent)}
+.copy-btn.copied{color:#22a06b;border-color:#22a06b;opacity:1}
 .content blockquote{margin:1.2em 0;padding:.6em 1.1em;background:var(--panel);
   border-left:4px solid var(--accent);border-radius:0 10px 10px 0;color:var(--text)}
 .content blockquote p{margin:.4em 0}
@@ -254,9 +263,38 @@ a:hover{text-decoration:underline}
     mermaid.run({querySelector:".mermaid"});
   }catch(e){console.error("mermaid",e);}
 
-  // Highlight non-mermaid code blocks.
+  // Highlight non-mermaid code blocks. Skip languages highlight.js doesn't know
+  // (e.g. hcl/terraform) so they render as clean plain text without a warning.
   content.querySelectorAll("pre code").forEach(function(el){
-    if(!el.classList.contains("language-mermaid")){ try{hljs.highlightElement(el);}catch(e){} }
+    if(el.classList.contains("language-mermaid")) return;
+    var m = (el.className.match(/language-([\w-]+)/) || [])[1];
+    if(m && !hljs.getLanguage(m)) return;
+    try{hljs.highlightElement(el);}catch(e){}
+  });
+
+  // Add a "Copy" button to every code block.
+  content.querySelectorAll("pre").forEach(function(pre){
+    var code = pre.querySelector("code");
+    if(!code) return;
+    var btn = document.createElement("button");
+    btn.className = "copy-btn"; btn.type = "button"; btn.textContent = "Copy";
+    btn.setAttribute("aria-label", "Copy code to clipboard");
+    btn.addEventListener("click", function(){
+      var text = code.innerText;
+      function ok(){ btn.textContent = "Copied!"; btn.classList.add("copied");
+        setTimeout(function(){ btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1500); }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(text).then(ok).catch(fallback);
+      } else { fallback(); }
+      function fallback(){
+        try{
+          var r = document.createRange(); r.selectNodeContents(code);
+          var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+          document.execCommand("copy"); sel.removeAllRanges(); ok();
+        }catch(e){}
+      }
+    });
+    pre.appendChild(btn);
   });
 
   // Build the in-page TOC from h2 + h3.
