@@ -229,10 +229,12 @@ they are offline, the pipeline will stay stuck in "pending".
 
 ### Step 7 — Clone the empty project in code-server
 
-Back in the code-server terminal, clone the project. Enter your GitLab username
-(`root`) and password (`C1sco12345`) when Git prompts for credentials:
+Back in the code-server terminal, clone the project into your working folder.
+Enter your GitLab username (`root`) and password (`C1sco12345`) when Git prompts
+for credentials:
 
 ```bash
+cd ~/automation_projects
 git clone http://198.18.1.18:8929/root/myproject.git
 cd myproject
 ```
@@ -243,8 +245,7 @@ cd myproject
 ### Step 8 — (Optional) Create the first commit
 
 If this is a brand-new, empty repository, seed it with a first file so the
-`main` branch exists on the server. Run these commands **only if** the clone was
-empty or Git reported a warning:
+`main` branch exists on the server:
 
 ```bash
 git switch --create main
@@ -253,6 +254,17 @@ git add README.md
 git commit -m "add README"
 git push --set-upstream origin main
 ```
+
+> **If Git says `Author identity unknown` / "Please tell me who you are":** set
+> your name and email once (the first commit failed because Git did not know who
+> you are), then re-run the commit and push:
+>
+> ```bash
+> git config --global user.email "root@example.com"
+> git config --global user.name "root"
+> git commit -m "add README"
+> git push --set-upstream origin main
+> ```
 
 ![Creating and pushing the first README commit](images/lab1-hands-on-13.png)
 *Figure 13 — Create the `main` branch and a first `README.md`.*
@@ -279,25 +291,44 @@ the first files) listed in the repository.
 
 The pipeline needs a specific set of files. The **easiest** way is to **copy them
 from the `solution_for_network_automation` folder** (already on the workstation)
-into your `myproject` folder using the code-server Explorer — select the files,
-**Copy**, then **Paste** into your project. The project must end up with this
-structure:
+into your `myproject` folder. Do it in the terminal — go into the solution folder
+and copy everything (including hidden dot-files) into your project:
 
+```bash
+cd ~/automation_projects/solution_for_network_automation
+ls -al                                              # see what you are copying
+cp -a ./ ~/automation_projects/myproject/           # copy every file into your project
 ```
+
+> **Tip:** You can also copy the files in the code-server **Explorer** — select
+> them, **Copy**, then **Paste** into your project — or create them by hand
+> (`mkdir <folder>` and edit in the code-server editor). The `cp -a` command above
+> is the fastest and preserves the folder structure.
+
+Your project ends up with this structure:
+
+```text
 myproject/
-├── .gitlab-ci.yml                 # the pipeline: validate → network_check → deploy
-├── testbed/testbed.yaml           # pyATS device inventory (IPs, creds, SSH options)
+├── .gitlab-ci.yml                     # the pipeline: validate → network_check → deploy
+├── testbed/testbed.yaml               # pyATS device inventory (IPs, creds, SSH options)
 ├── jobs/
-│   ├── smoke_job.py               # pyATS job entry point
-│   ├── configure_loopback.py      # applies Loopback300 when tests pass
-│   └── tests/test_ping_routes.py  # ping + static-route test cases
-├── configs/loopbacks.yaml         # declarative Loopback300
-└── ansible/vars/vlans.yml         # VLAN intent — you edit this later
+│   ├── smoke_job.py                   # pyATS job entry point
+│   ├── configure_loopback.py          # applies Loopback300 when tests pass
+│   ├── ping_and_loopback.py           # ping gate → creates Loopback3
+│   └── tests/test_ping_routes.py      # ping + static-route test cases
+├── configs/
+│   ├── loopbacks.yaml                 # declarative Loopback300
+│   └── loopback3.yaml                 # declarative Loopback3 + ping target
+└── ansible/
+    ├── ansible.cfg
+    ├── requirements.yml
+    ├── group_vars/all.yml
+    ├── inventory/hosts.yml
+    ├── vars/vlans.yml                 # VLAN intent — you edit this later
+    └── playbooks/
+        ├── validate_vlans.yml
+        └── configure_vlans.yml
 ```
-
-> **Tip:** If you prefer the terminal, you can create folders and files by hand
-> (`mkdir <folder>` and edit with the code-server editor or `vi <file>`), but
-> copy-and-paste from the solution folder is faster and less error-prone.
 
 ![The solution folder with the files to copy](images/lab1-hands-on-17.png)
 *Figure 17 — Copy the required files from the `solution_for_network_automation` folder …*
@@ -311,8 +342,9 @@ Stage, commit, and push everything to GitLab. Use the **Source Control** panel i
 code-server, or run in the terminal:
 
 ```bash
+cd ~/automation_projects/myproject
 git add .
-git commit -m "add pipeline project files"
+git commit -m "first commit"
 git push
 ```
 
@@ -351,7 +383,7 @@ Click the failed pipeline, then click the first failed **stage** and its **job**
 to open the log. Read the error message at the bottom — it tells you exactly what
 is wrong. Here, the **validate** stage reports an **invalid VLAN id**:
 
-```
+```text
 [ERROR]: INVALID VLAN id '5000' (name 'VOICE'). VLAN ids must be a whole number
 1-4094 and must not use the reserved range 1002-1005. Fix vars/vlans.yml and push again.
 Origin: ansible/playbooks/validate_vlans.yml
@@ -431,7 +463,7 @@ The new commit starts another pipeline. This time **Stage 1 (validate) passes**,
 but **Stage 2 (network_check) fails**. Open the failed `ping_and_loopback` job to
 read why — every router fails to **ping `192.168.1.1`**:
 
-```
+```text
 STEP 1  Ping pre-check  ->  every router must reach 192.168.1.1
   [FAIL] iosv-1     -> 192.168.1.1: success rate 0%
   [FAIL] csr1000v-0 -> 192.168.1.1: success rate 0%
@@ -451,7 +483,7 @@ and it is **shut down by default** — that is why the ping fails. Fix it on the
 device. In CML, **right-click `iosv-0` ▸ Console ▸ Open Console**, then bring the
 interface up:
 
-```
+```text
 enable
 configure terminal
  interface Loopback2
@@ -508,8 +540,15 @@ git pull origin main
 *Figure 41 — `git fetch` + `git pull origin main` bring the web-UI edits back to your local copy.*
 
 From here you can edit any file in **code-server**, then commit and push it back to
-the remote from the **Source Control** panel — the same edit-test-push loop, now
-from the IDE.
+the remote — either from the **Source Control** panel, or from the terminal with
+the same edit-commit-push loop:
+
+```bash
+git status                              # see what you changed
+git add .
+git commit -m "checking CLI commit"
+git push
+```
 
 ![Editing a file in code-server and committing to the remote](images/lab1-hands-on-42.png)
 *Figure 42 — Edit in code-server, then commit and push back to the GitLab remote.*
