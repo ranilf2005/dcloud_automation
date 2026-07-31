@@ -1,6 +1,7 @@
 ---
 title: Lab 1 — Hands-on Walkthrough (step by step)
-nav: Lab 1 · Hands-on steps
+nav: Hands-on walkthrough
+group: Lab 1 · NetDevOps
 order: 3
 eyebrow: Lab 1 · Walkthrough
 description: A fully illustrated, numbered walkthrough — start the lab, build the GitLab project, run the pipeline, and troubleshoot it to a green run.

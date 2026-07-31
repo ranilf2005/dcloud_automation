@@ -1,6 +1,7 @@
 ---
 title: dCloud Automation — Training Lab Guide
 nav: Home
+group: Getting started
 order: 1
 eyebrow: Start here
 description: Overview, lab access, and the code-server IDE — begin here, then pick a lab.

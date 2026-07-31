@@ -1,8 +1,9 @@
 ---
 title: Appendix — Lab 2 project files
-nav: Lab 2 · Files
+nav: Project files
+group: Lab 2 · Security IaC
 order: 7
-eyebrow: Reference
+eyebrow: Lab 2 · Reference
 description: Every Lab 2 (Security IaC) project file in full — Terraform, REST API, and Ansible — with a copy button.
 ---
 
@@ -15,7 +16,8 @@ description: Every Lab 2 (Security IaC) project file in full — Terraform, REST
 
 ## Project root
 
-### `.gitignore`
+<details class="file">
+<summary><code>.gitignore</code></summary>
 
 ````text
 # ---- Terraform ----
@@ -55,12 +57,13 @@ ansible/collections/
 .DS_Store
 ````
 
+</details>
+
 
 ## ansible/
 
-### `ansible/ansible.cfg`
-
-Ansible configuration for the playbooks.
+<details class="file">
+<summary><code>ansible/ansible.cfg</code> <span class="file-desc">— Ansible configuration for the playbooks.</span></summary>
 
 ````ini
 [defaults]
@@ -77,9 +80,10 @@ command_timeout = 60
 connect_timeout = 60
 ````
 
-### `ansible/create_access_policy.yml`
+</details>
 
-Playbook: create the objects → policy → rule via the FMC REST API.
+<details class="file">
+<summary><code>ansible/create_access_policy.yml</code> <span class="file-desc">— Playbook: create the objects → policy → rule via the FMC REST API.</span></summary>
 
 ````yaml
 ---
@@ -151,9 +155,10 @@ Playbook: create the objects → policy → rule via the FMC REST API.
         msg: "Created ACP '{{ acp_name }}' with an ALLOW rule inside -> outside."
 ````
 
-### `ansible/inventory.yml`
+</details>
 
-FMC management hosts.
+<details class="file">
+<summary><code>ansible/inventory.yml</code> <span class="file-desc">— FMC management hosts.</span></summary>
 
 ````yaml
 ---
@@ -168,9 +173,10 @@ all:
         #   ansible_host: 198.18.1.11
 ````
 
-### `ansible/requirements.yml`
+</details>
 
-Ansible collections (cisco.ios, ansible.netcommon).
+<details class="file">
+<summary><code>ansible/requirements.yml</code> <span class="file-desc">— Ansible collections (cisco.ios, ansible.netcommon).</span></summary>
 
 ````yaml
 ---
@@ -179,12 +185,13 @@ collections:
   - name: cisco.fmcansible
 ````
 
+</details>
+
 
 ## rest_api/
 
-### `rest_api/config.env.example`
-
-Example environment variables — copy to config.env.
+<details class="file">
+<summary><code>rest_api/config.env.example</code> <span class="file-desc">— Example environment variables — copy to config.env.</span></summary>
 
 ````ini
 # Copy to config.env and `source` it (config.env is gitignored).
@@ -194,9 +201,10 @@ export FMC_USERNAME=admin
 export FMC_PASSWORD=Cisco@123
 ````
 
-### `rest_api/fmc_access_policy.py`
+</details>
 
-Python client: token auth → objects → policy → rule (defaults to a safe dry-run).
+<details class="file">
+<summary><code>rest_api/fmc_access_policy.py</code> <span class="file-desc">— Python client: token auth → objects → policy → rule (defaults to a safe dry-run).</span></summary>
 
 ````python
 #!/usr/bin/env python3
@@ -364,9 +372,10 @@ if __name__ == "__main__":
     sys.exit(main())
 ````
 
-### `rest_api/pytest.ini`
+</details>
 
-pytest configuration.
+<details class="file">
+<summary><code>rest_api/pytest.ini</code> <span class="file-desc">— pytest configuration.</span></summary>
 
 ````ini
 [pytest]
@@ -374,9 +383,10 @@ pythonpath = .
 testpaths = tests
 ````
 
-### `rest_api/requirements.txt`
+</details>
 
-Python dependencies (requests, PyYAML, pytest).
+<details class="file">
+<summary><code>rest_api/requirements.txt</code> <span class="file-desc">— Python dependencies (requests, PyYAML, pytest).</span></summary>
 
 ````text
 requests>=2.31
@@ -384,12 +394,13 @@ PyYAML>=6.0
 pytest>=8.0
 ````
 
+</details>
+
 
 ## terraform/
 
-### `terraform/access_policy.tf`
-
-The access control policy plus the inline ALLOW rule.
+<details class="file">
+<summary><code>terraform/access_policy.tf</code> <span class="file-desc">— The access control policy plus the inline ALLOW rule.</span></summary>
 
 ````hcl
 # Access Control Policy with a single rule that ALLOWS traffic from the
@@ -433,9 +444,10 @@ resource "fmc_access_control_policy" "inside_to_outside" {
 }
 ````
 
-### `terraform/objects.tf`
+</details>
 
-Two fmc_network objects (inside/outside subnets).
+<details class="file">
+<summary><code>terraform/objects.tf</code> <span class="file-desc">— Two fmc_network objects (inside/outside subnets).</span></summary>
 
 ````hcl
 # Network objects representing the inside and outside subnets.
@@ -452,9 +464,10 @@ resource "fmc_network" "outside_net" {
 }
 ````
 
-### `terraform/outputs.tf`
+</details>
 
-Prints the created object / policy IDs.
+<details class="file">
+<summary><code>terraform/outputs.tf</code> <span class="file-desc">— Prints the created object / policy IDs.</span></summary>
 
 ````hcl
 output "inside_network_object_id" {
@@ -473,9 +486,10 @@ output "access_control_policy_id" {
 }
 ````
 
-### `terraform/providers.tf`
+</details>
 
-FMC connection settings (url, username, password, insecure).
+<details class="file">
+<summary><code>terraform/providers.tf</code> <span class="file-desc">— FMC connection settings (url, username, password, insecure).</span></summary>
 
 ````hcl
 # Cisco Secure Firewall Management Center (FMC) provider.
@@ -493,9 +507,10 @@ provider "fmc" {
 }
 ````
 
-### `terraform/terraform.tfvars.example`
+</details>
 
-Example variable values — copy to terraform.tfvars.
+<details class="file">
+<summary><code>terraform/terraform.tfvars.example</code> <span class="file-desc">— Example variable values — copy to terraform.tfvars.</span></summary>
 
 ````hcl
 # Copy to terraform.tfvars and adjust for your target FMC.
@@ -517,9 +532,10 @@ outside_network_cidr = "198.18.1.0/24"
 acp_name             = "inside-to-outside-policy"
 ````
 
-### `terraform/variables.tf`
+</details>
 
-Inputs: FMC URL, credentials, inside/outside CIDRs, policy name.
+<details class="file">
+<summary><code>terraform/variables.tf</code> <span class="file-desc">— Inputs: FMC URL, credentials, inside/outside CIDRs, policy name.</span></summary>
 
 ````hcl
 variable "fmc_url" {
@@ -565,9 +581,10 @@ variable "acp_name" {
 }
 ````
 
-### `terraform/versions.tf`
+</details>
 
-Terraform and provider version constraints.
+<details class="file">
+<summary><code>terraform/versions.tf</code> <span class="file-desc">— Terraform and provider version constraints.</span></summary>
 
 ````hcl
 terraform {
@@ -582,9 +599,10 @@ terraform {
 }
 ````
 
-### `terraform/zones.tf`
+</details>
 
-Two fmc_security_zone objects (inside/outside).
+<details class="file">
+<summary><code>terraform/zones.tf</code> <span class="file-desc">— Two fmc_security_zone objects (inside/outside).</span></summary>
 
 ````hcl
 # Security zones for the inside and outside interfaces.
@@ -599,12 +617,13 @@ resource "fmc_security_zone" "outside" {
 }
 ````
 
+</details>
+
 
 ## ansible/
 
-### `ansible/group_vars/fmc.yml`
-
-httpapi connection settings for the FMC.
+<details class="file">
+<summary><code>ansible/group_vars/fmc.yml</code> <span class="file-desc">— httpapi connection settings for the FMC.</span></summary>
 
 ````yaml
 ---
@@ -622,12 +641,13 @@ ansible_user: admin
 ansible_password: "{{ lookup('ansible.builtin.env', 'FMC_PASSWORD') }}"
 ````
 
+</details>
+
 
 ## rest_api/
 
-### `rest_api/tests/test_payloads.py`
-
-Offline unit tests for the JSON payload builders.
+<details class="file">
+<summary><code>rest_api/tests/test_payloads.py</code> <span class="file-desc">— Offline unit tests for the JSON payload builders.</span></summary>
 
 ````python
 """Offline unit tests for the FMC REST payload builders (no FMC contacted)."""
@@ -663,4 +683,6 @@ def test_access_rule_allows_inside_to_outside():
     assert r["sourceNetworks"]["objects"][0]["id"] == "1"
     assert r["destinationNetworks"]["objects"][0]["id"] == "2"
 ````
+
+</details>
 

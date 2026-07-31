@@ -16,6 +16,7 @@ Front-matter (YAML-ish, one `key: value` per line, between two `---` lines):
     ---
     title: Lab 1 — NetDevOps CI/CD   # <title> + card heading
     nav: Lab 1 · NetDevOps           # short label in the sidebar / cards
+    group: Lab 1 · NetDevOps         # collapsible sidebar group this page sits in
     order: 2                         # sort order across the site
     eyebrow: Lab 1                   # small kicker above the card title
     description: one-line summary     # <meta> + card body text
@@ -59,6 +60,7 @@ def load_pages():
             "output": slug + ".html",
             "title": meta.get("title", slug),
             "nav": meta.get("nav", meta.get("title", slug)),
+            "group": meta.get("group", meta.get("nav", "More")),
             "eyebrow": meta.get("eyebrow", ""),
             "description": meta.get("description", ""),
             "order": int(meta.get("order", "999")),
@@ -79,7 +81,7 @@ def build_cards(pages, current_slug):
             '<span class="card-eyebrow">{eyebrow}</span>'
             '<span class="card-title">{title}</span>'
             '<span class="card-desc">{desc}</span>'
-            '<span class="card-go">Open →</span>'
+            '<span class="card-go">Open &rarr;</span>'
             "</a>".format(
                 href=html.escape(p["output"]),
                 eyebrow=html.escape(p["eyebrow"] or p["nav"]),
@@ -91,18 +93,47 @@ def build_cards(pages, current_slug):
 
 
 def build_page_nav(pages, current_slug):
-    """Server-rendered cross-page links for the sidebar."""
-    links = []
+    """Server-rendered, collapsible, grouped cross-page links for the sidebar.
+
+    Pages are bucketed into their `group`; groups appear in the order their first
+    page appears. The group containing the current page is expanded; the active
+    page gets an inline #page-toc mount that JS fills with its headings.
+    """
+    order = []
+    buckets = {}
     for p in pages:
-        cls = "page-link active" if p["slug"] == current_slug else "page-link"
-        links.append(
-            '<a class="{cls}" href="{href}">{label}</a>'.format(
-                cls=cls,
-                href=html.escape(p["output"]),
-                label=html.escape(p["nav"]),
+        g = p["group"]
+        if g not in buckets:
+            buckets[g] = []
+            order.append(g)
+        buckets[g].append(p)
+
+    out = []
+    for g in order:
+        group_pages = buckets[g]
+        active = any(p["slug"] == current_slug for p in group_pages)
+        open_cls = " open" if active else ""
+        aria = "true" if active else "false"
+        out.append('<div class="nav-group{0}">'.format(open_cls))
+        out.append(
+            '<button class="nav-group-h" type="button" aria-expanded="{0}">'
+            "<span>{1}</span><span class=\"chev\">&rsaquo;</span></button>".format(
+                aria, html.escape(g)
             )
         )
-    return "".join(links)
+        out.append('<div class="nav-group-body">')
+        for p in group_pages:
+            is_active = p["slug"] == current_slug
+            cls = "page-link active" if is_active else "page-link"
+            out.append(
+                '<a class="{0}" href="{1}">{2}</a>'.format(
+                    cls, html.escape(p["output"]), html.escape(p["nav"])
+                )
+            )
+            if is_active:
+                out.append('<nav class="page-toc" id="page-toc" aria-label="On this page"></nav>')
+        out.append("</div></div>")
+    return "".join(out)
 
 
 TEMPLATE = r"""<!DOCTYPE html>
@@ -113,122 +144,186 @@ TEMPLATE = r"""<!DOCTYPE html>
 <title>__TITLE__</title>
 <meta name="description" content="__DESCRIPTION__">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230d274d'/><text x='50' y='72' font-size='60' text-anchor='middle' fill='%2300bceb' font-family='Arial' font-weight='bold'>d</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css">
 <style>
+/* ===== Cisco-branded palette ===== */
 :root{
-  --bg:#0b1a2f; --panel:#0f2645; --panel2:#12305a; --text:#e8eef7; --muted:#9db3d1;
-  --accent:#00bceb; --accent2:#1ba0d7; --border:#1d3a63; --code-bg:#0a1526;
-  --shadow:0 8px 30px rgba(0,0,0,.35);
+  --bg:#061a2f; --panel:#0b2544; --panel2:#123058; --text:#e8eef7; --muted:#93aacb;
+  --accent:#00bceb;            /* Cisco blue */
+  --accent2:#0d7fb0; --accent-ink:#00131f;
+  --border:#1b3a63; --code-bg:#07182c;
+  --shadow:0 10px 34px rgba(0,0,0,.38);
 }
 [data-theme="light"]{
-  --bg:#f4f7fb; --panel:#ffffff; --panel2:#eef4fb; --text:#12233d; --muted:#546b8a;
-  --accent:#0d7fb0; --accent2:#0a6a95; --border:#d9e3f0; --code-bg:#0d1b2e;
-  --shadow:0 6px 24px rgba(20,40,80,.12);
+  --bg:#f5f8fc; --panel:#ffffff; --panel2:#eef4fb; --text:#0e2038; --muted:#5a7192;
+  --accent:#0a7aad; --accent2:#075b83; --accent-ink:#ffffff;
+  --border:#d8e3f0; --code-bg:#0d1b2e; --shadow:0 8px 26px rgba(20,45,90,.12);
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 body{margin:0;background:var(--bg);color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Arial,sans-serif;
-  line-height:1.65;font-size:16px}
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  line-height:1.7;font-size:16.5px;-webkit-font-smoothing:antialiased}
 a{color:var(--accent);text-decoration:none}
 a:hover{text-decoration:underline}
-/* ---- layout ---- */
-.sidebar{position:fixed;top:0;left:0;width:300px;height:100vh;overflow-y:auto;
-  background:var(--panel);border-right:1px solid var(--border);padding:22px 18px}
-.brand{font-weight:800;font-size:1.15rem;line-height:1.2;padding:6px 8px 14px;
-  border-bottom:1px solid var(--border);margin-bottom:12px;display:block;color:var(--text)}
+
+/* ===== scroll progress bar ===== */
+#progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:60;
+  background:linear-gradient(90deg,var(--accent),var(--accent2))}
+
+/* ===== sidebar ===== */
+.sidebar{position:fixed;top:0;left:0;width:312px;height:100vh;overflow-y:auto;
+  background:var(--panel);border-right:1px solid var(--border);padding:0 0 24px}
+.sidebar::-webkit-scrollbar{width:9px}
+.sidebar::-webkit-scrollbar-thumb{background:var(--border);border-radius:6px}
+.brand{display:block;padding:20px 20px 16px;border-bottom:1px solid var(--border);
+  position:relative;color:var(--text)}
 .brand:hover{text-decoration:none}
-.brand small{display:block;color:var(--muted);font-weight:600;font-size:.72rem;margin-top:4px;letter-spacing:.04em}
-.brand .dot{color:var(--accent)}
-.nav-label{color:var(--muted);font-size:.68rem;font-weight:700;letter-spacing:.08em;
-  text-transform:uppercase;margin:14px 8px 6px}
-#pages{display:flex;flex-direction:column;gap:2px}
-#pages .page-link{color:var(--muted);padding:7px 10px;border-radius:7px;font-size:.92rem;
-  border-left:2px solid transparent;font-weight:600}
-#pages .page-link:hover{background:var(--panel2);color:var(--text);text-decoration:none}
-#pages .page-link.active{color:var(--accent);border-left-color:var(--accent);background:var(--panel2)}
-#toc{display:flex;flex-direction:column;gap:1px;margin-top:2px}
-#toc a{color:var(--muted);padding:5px 10px;border-radius:7px;font-size:.88rem;border-left:2px solid transparent}
-#toc a:hover{background:var(--panel2);color:var(--text);text-decoration:none}
-#toc a.lvl3{padding-left:22px;font-size:.82rem}
-#toc a.active{color:var(--accent);border-left-color:var(--accent);background:var(--panel2)}
-.theme-toggle{margin-top:16px;width:100%;padding:8px;border:1px solid var(--border);
-  background:var(--panel2);color:var(--text);border-radius:8px;cursor:pointer;font-size:.85rem}
+.brand::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+.brand .eyebrow{display:block;color:var(--accent);font-size:.64rem;font-weight:800;
+  letter-spacing:.22em;text-transform:uppercase;margin-bottom:3px}
+.brand .name{font-weight:800;font-size:1.18rem;line-height:1.15;letter-spacing:-.01em}
+.brand .name .dot{color:var(--accent)}
+.brand .sub{display:block;color:var(--muted);font-weight:600;font-size:.72rem;margin-top:3px}
+
+/* grouped nav */
+#pages{padding:6px 12px 0}
+.nav-group{border-bottom:1px solid var(--border)}
+.nav-group:last-child{border-bottom:none}
+.nav-group-h{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:none;border:none;color:var(--muted);font-size:.7rem;font-weight:800;letter-spacing:.1em;
+  text-transform:uppercase;padding:13px 8px;cursor:pointer;font-family:inherit;text-align:left}
+.nav-group-h:hover{color:var(--text)}
+.nav-group-h .chev{font-size:1.05rem;transition:transform .18s;flex:none}
+.nav-group.open .nav-group-h .chev{transform:rotate(90deg)}
+.nav-group-body{display:none;padding-bottom:8px}
+.nav-group.open .nav-group-body{display:block}
+.page-link{display:block;color:var(--muted);padding:7px 10px;border-radius:8px;font-size:.92rem;
+  font-weight:600;border-left:2px solid transparent}
+.page-link:hover{background:var(--panel2);color:var(--text);text-decoration:none}
+.page-link.active{color:var(--accent);border-left-color:var(--accent);background:var(--panel2)}
+.page-toc{display:flex;flex-direction:column;gap:1px;margin:3px 0 8px 12px;
+  border-left:1px solid var(--border);padding-left:4px}
+.page-toc a{color:var(--muted);font-size:.82rem;padding:3px 9px;border-radius:6px;
+  border-left:2px solid transparent;margin-left:-6px}
+.page-toc a.lvl3{padding-left:20px;font-size:.78rem}
+.page-toc a:hover{color:var(--text);background:var(--panel2);text-decoration:none}
+.page-toc a.active{color:var(--accent);border-left-color:var(--accent);background:var(--panel2)}
+
+.theme-toggle{margin:14px 14px 0;width:calc(100% - 28px);padding:9px;border:1px solid var(--border);
+  background:var(--panel2);color:var(--text);border-radius:9px;cursor:pointer;font-size:.85rem;
+  font-family:inherit;font-weight:600}
 .theme-toggle:hover{border-color:var(--accent)}
-/* ---- content ---- */
-.content{margin-left:300px;max-width:900px;padding:40px 48px 120px}
-.content h1{font-size:2rem;line-height:1.2;margin:.2em 0 .4em;background:linear-gradient(90deg,var(--accent),var(--accent2));
+
+/* ===== content ===== */
+.content{margin-left:312px;max-width:860px;padding:48px 56px 140px}
+.content h1{font-size:2.1rem;line-height:1.15;margin:.1em 0 .5em;font-weight:800;letter-spacing:-.02em;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
   -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.content h2{font-size:1.5rem;margin:2.2em 0 .6em;padding-bottom:.3em;border-bottom:2px solid var(--border);scroll-margin-top:20px}
-.content h3{font-size:1.18rem;margin:1.8em 0 .5em;color:var(--accent);scroll-margin-top:20px}
-.content h4{font-size:1.02rem;margin:1.4em 0 .4em;scroll-margin-top:20px}
+.content h2{font-size:1.5rem;margin:2.3em 0 .6em;padding-bottom:.3em;font-weight:800;letter-spacing:-.01em;
+  border-bottom:2px solid var(--border);scroll-margin-top:20px}
+.content h3{font-size:1.2rem;margin:1.9em 0 .5em;color:var(--accent);font-weight:700;scroll-margin-top:20px}
+.content h4{font-size:1.04rem;margin:1.4em 0 .4em;font-weight:700;scroll-margin-top:20px}
 .content p,.content li{color:var(--text)}
 .content ul,.content ol{padding-left:1.4em}
-.content li{margin:.28em 0}
-.content code{background:var(--code-bg);color:#e6edf3;padding:.15em .4em;border-radius:5px;font-size:.86em;
-  font-family:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.content li{margin:.3em 0}
+.content code{background:var(--code-bg);color:#8fe3ff;padding:.15em .42em;border-radius:5px;font-size:.85em;
+  font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 .content pre{position:relative;background:var(--code-bg);border:1px solid var(--border);border-radius:12px;
   padding:16px 18px;overflow:auto;box-shadow:var(--shadow)}
-.content pre code{background:none;padding:0;font-size:.85rem;line-height:1.55}
-/* ---- copy button on code blocks ---- */
-.copy-btn{position:absolute;top:8px;right:8px;z-index:2;padding:4px 11px;font-size:.72rem;
-  font-weight:700;letter-spacing:.02em;color:var(--muted);background:var(--panel2);
-  border:1px solid var(--border);border-radius:7px;cursor:pointer;opacity:.55;
-  transition:opacity .12s,color .12s,border-color .12s;
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
-.content pre:hover .copy-btn{opacity:1}
-.copy-btn:hover{color:var(--text);border-color:var(--accent)}
-.copy-btn.copied{color:#22a06b;border-color:#22a06b;opacity:1}
-.content blockquote{margin:1.2em 0;padding:.6em 1.1em;background:var(--panel);
+.content pre code{background:none;color:inherit;padding:0;font-size:.85rem;line-height:1.55}
+.content blockquote{margin:1.3em 0;padding:.7em 1.15em;background:var(--panel);
   border-left:4px solid var(--accent);border-radius:0 10px 10px 0;color:var(--text)}
 .content blockquote p{margin:.4em 0}
-.content table{border-collapse:collapse;width:100%;margin:1.2em 0;font-size:.92rem;
+.content table{border-collapse:collapse;width:100%;margin:1.3em 0;font-size:.92rem;
   background:var(--panel);border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
 .content th,.content td{border:1px solid var(--border);padding:9px 13px;text-align:left;vertical-align:top}
 .content th{background:var(--panel2);color:var(--text);font-weight:700}
 .content tr:nth-child(even) td{background:rgba(127,127,127,.05)}
-.content hr{border:none;border-top:1px solid var(--border);margin:2.4em 0}
+.content hr{border:none;border-top:1px solid var(--border);margin:2.6em 0}
 .content h1,.content h2,.content h3,.content h4{position:relative}
-.mermaid{background:#ffffff;border-radius:12px;padding:18px;margin:1.4em 0;text-align:center;
+.mermaid{background:#ffffff;border-radius:12px;padding:18px;margin:1.5em 0;text-align:center;
   box-shadow:var(--shadow);overflow:auto}
-/* ---- screenshots ---- */
+
+/* screenshots */
 .content img{max-width:100%;height:auto;display:block;margin:1.2em 0 .4em;
   border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);background:#fff}
 .content img+em{display:block;color:var(--muted);font-size:.86rem;line-height:1.5;
-  margin:0 0 1.6em;text-align:center}
-.content figure{margin:1.4em 0}
-.content figcaption{color:var(--muted);font-size:.86rem;text-align:center;margin-top:.5em}
-/* ---- nav cards (home page) ---- */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:1.6em 0}
+  margin:0 0 1.7em;text-align:center}
+
+/* copy button */
+.copy-btn{position:absolute;top:8px;right:8px;z-index:2;padding:4px 11px;font-size:.72rem;
+  font-weight:700;letter-spacing:.02em;color:var(--muted);background:var(--panel2);
+  border:1px solid var(--border);border-radius:7px;cursor:pointer;opacity:.5;
+  transition:opacity .12s,color .12s,border-color .12s;font-family:inherit}
+.content pre:hover .copy-btn,details[open] .copy-btn{opacity:1}
+.copy-btn:hover{color:var(--text);border-color:var(--accent)}
+.copy-btn.copied{color:#22c58b;border-color:#22c58b;opacity:1}
+
+/* collapsible file blocks (appendix pages) */
+details.file{border:1px solid var(--border);border-radius:11px;margin:.7em 0;background:var(--panel);overflow:hidden}
+details.file>summary{cursor:pointer;padding:11px 15px;font-size:.93rem;font-weight:600;color:var(--text);
+  list-style:none;display:flex;align-items:center;gap:9px;user-select:none}
+details.file>summary::-webkit-details-marker{display:none}
+details.file>summary::before{content:"\203A";color:var(--accent);font-weight:800;
+  transition:transform .15s;display:inline-block;flex:none}
+details.file[open]>summary::before{transform:rotate(90deg)}
+details.file>summary:hover{background:var(--panel2)}
+details.file>summary code{background:var(--code-bg);color:var(--accent);padding:.12em .5em;border-radius:5px;font-size:.85em}
+details.file>summary .file-desc{color:var(--muted);font-weight:400;font-size:.86rem}
+details.file>pre{margin:0;border:none;border-top:1px solid var(--border);border-radius:0;box-shadow:none}
+.details-tools{display:flex;gap:8px;margin:1.2em 0 1.6em;flex-wrap:wrap}
+.details-tools button{padding:6px 13px;font-size:.8rem;font-weight:700;color:var(--muted);
+  background:var(--panel2);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-family:inherit}
+.details-tools button:hover{color:var(--text);border-color:var(--accent)}
+
+/* nav cards (home) */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px;margin:1.7em 0}
 .card{display:flex;flex-direction:column;gap:6px;padding:18px 18px 16px;background:var(--panel);
   border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow);transition:transform .12s,border-color .12s}
 .card:hover{transform:translateY(-3px);border-color:var(--accent);text-decoration:none}
-.card-eyebrow{color:var(--accent);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.card-eyebrow{color:var(--accent);font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
 .card-title{color:var(--text);font-size:1.12rem;font-weight:800;line-height:1.2}
 .card-desc{color:var(--muted);font-size:.88rem;line-height:1.45;flex:1}
 .card-go{color:var(--accent);font-size:.82rem;font-weight:700;margin-top:2px}
-.hamburger{display:none;position:fixed;top:12px;left:12px;z-index:30;background:var(--panel);
-  color:var(--text);border:1px solid var(--border);border-radius:8px;font-size:1.2rem;padding:6px 12px;cursor:pointer}
-.checkbox-note{color:var(--muted)}
-@media(max-width:900px){
-  .sidebar{transform:translateX(-100%);transition:transform .25s;z-index:25;width:82%;max-width:320px}
+
+/* back to top */
+#toTop{position:fixed;right:24px;bottom:24px;z-index:40;width:46px;height:46px;border-radius:50%;
+  background:var(--accent);color:var(--accent-ink);border:none;font-size:1.3rem;cursor:pointer;
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .12s;box-shadow:var(--shadow)}
+#toTop.show{opacity:.92;pointer-events:auto}
+#toTop:hover{transform:translateY(-2px);opacity:1}
+
+.hamburger{display:none;position:fixed;top:12px;left:12px;z-index:50;background:var(--panel);
+  color:var(--text);border:1px solid var(--border);border-radius:9px;font-size:1.2rem;padding:7px 13px;cursor:pointer}
+.scrim{display:none}
+@media(max-width:960px){
+  .sidebar{transform:translateX(-100%);transition:transform .25s;z-index:45;width:84%;max-width:330px}
   .sidebar.open{transform:none}
-  .content{margin-left:0;padding:64px 20px 100px}
+  .content{margin-left:0;padding:66px 20px 110px;max-width:100%}
   .hamburger{display:block}
+  .scrim.show{display:block;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:44}
 }
 </style>
 </head>
 <body>
+<div id="progress"></div>
 <button class="hamburger" id="hamburger" aria-label="Menu">&#9776;</button>
+<div class="scrim" id="scrim"></div>
 <aside class="sidebar" id="sidebar">
-  <a class="brand" href="index.html">dCloud<span class="dot">.</span>Automation<small>Training Lab Guide</small></a>
-  <div class="nav-label">Guide</div>
+  <a class="brand" href="index.html">
+    <span class="eyebrow">Cisco dCloud</span>
+    <span class="name">Automation<span class="dot">.</span>Labs</span>
+    <span class="sub">Training Lab Guide</span>
+  </a>
   <nav id="pages" aria-label="Pages">__PAGE_NAV__</nav>
-  <div class="nav-label">On this page</div>
-  <nav id="toc" aria-label="Contents"></nav>
   <button class="theme-toggle" id="theme-toggle">&#9788; Toggle light / dark</button>
 </aside>
 <main class="content markdown-body" id="content"></main>
+<button id="toTop" aria-label="Back to top" title="Back to top">&#8593;</button>
 
 <script id="md" type="text/markdown">__MARKDOWN__</script>
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
@@ -244,27 +339,24 @@ a:hover{text-decoration:underline}
   var content = document.getElementById("content");
   content.innerHTML = marked.parse(src);
 
-  // Give every heading a GitHub-style id so the in-page TOC anchors resolve.
+  // Heading ids for anchors.
   var used = {};
   content.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach(function(h){
     var id = slugify(h.textContent); if(used[id]){used[id]++; id=id+"-"+used[id];} else {used[id]=1;}
     h.id = id;
   });
 
-  // Convert ```mermaid code blocks into <div class="mermaid"> (decoded text).
+  // ```mermaid -> <div class="mermaid">
   content.querySelectorAll("code.language-mermaid").forEach(function(code){
-    var div = document.createElement("div");
-    div.className = "mermaid";
-    div.textContent = code.textContent;
-    code.parentNode.replaceWith(div);
+    var div = document.createElement("div"); div.className = "mermaid";
+    div.textContent = code.textContent; code.parentNode.replaceWith(div);
   });
   try{
     mermaid.initialize({startOnLoad:false, theme:"default", securityLevel:"loose"});
     mermaid.run({querySelector:".mermaid"});
   }catch(e){console.error("mermaid",e);}
 
-  // Highlight non-mermaid code blocks. Skip languages highlight.js doesn't know
-  // (e.g. hcl/terraform) so they render as clean plain text without a warning.
+  // Highlight known languages only (hcl/terraform etc. render clean plain text).
   content.querySelectorAll("pre code").forEach(function(el){
     if(el.classList.contains("language-mermaid")) return;
     var m = (el.className.match(/language-([\w-]+)/) || [])[1];
@@ -272,66 +364,103 @@ a:hover{text-decoration:underline}
     try{hljs.highlightElement(el);}catch(e){}
   });
 
-  // Add a "Copy" button to every code block.
+  // Copy button on every code block.
   content.querySelectorAll("pre").forEach(function(pre){
-    var code = pre.querySelector("code");
-    if(!code) return;
+    var code = pre.querySelector("code"); if(!code) return;
     var btn = document.createElement("button");
-    btn.className = "copy-btn"; btn.type = "button"; btn.textContent = "Copy";
-    btn.setAttribute("aria-label", "Copy code to clipboard");
-    btn.addEventListener("click", function(){
-      var text = code.innerText;
-      function ok(){ btn.textContent = "Copied!"; btn.classList.add("copied");
-        setTimeout(function(){ btn.textContent = "Copy"; btn.classList.remove("copied"); }, 1500); }
+    btn.className="copy-btn"; btn.type="button"; btn.textContent="Copy";
+    btn.setAttribute("aria-label","Copy code to clipboard");
+    btn.addEventListener("click", function(ev){
+      ev.preventDefault();
+      var text = code.textContent;
+      function ok(){ btn.textContent="Copied!"; btn.classList.add("copied");
+        setTimeout(function(){ btn.textContent="Copy"; btn.classList.remove("copied"); },1500); }
+      function fallback(){ try{ var r=document.createRange(); r.selectNodeContents(code);
+        var s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        document.execCommand("copy"); s.removeAllRanges(); ok(); }catch(e){} }
       if(navigator.clipboard && navigator.clipboard.writeText){
         navigator.clipboard.writeText(text).then(ok).catch(fallback);
       } else { fallback(); }
-      function fallback(){
-        try{
-          var r = document.createRange(); r.selectNodeContents(code);
-          var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
-          document.execCommand("copy"); sel.removeAllRanges(); ok();
-        }catch(e){}
-      }
     });
     pre.appendChild(btn);
   });
 
-  // Build the in-page TOC from h2 + h3.
-  var toc = document.getElementById("toc");
-  content.querySelectorAll("h2,h3").forEach(function(h){
-    var a = document.createElement("a");
-    a.href = "#"+h.id; a.textContent = h.textContent;
-    if(h.tagName==="H3") a.className="lvl3";
-    toc.appendChild(a);
+  // Expand / collapse all for pages with collapsible file blocks.
+  var files = content.querySelectorAll("details.file");
+  if(files.length){
+    var bar = document.createElement("div"); bar.className="details-tools";
+    bar.innerHTML = '<button type="button" data-act="open">Expand all</button>'
+                  + '<button type="button" data-act="close">Collapse all</button>';
+    var h1 = content.querySelector("h1");
+    if(h1 && h1.nextSibling) h1.parentNode.insertBefore(bar, h1.nextSibling.nextSibling || null);
+    else content.insertBefore(bar, content.firstChild);
+    bar.addEventListener("click", function(e){
+      var b = e.target.closest("button"); if(!b) return;
+      var open = b.getAttribute("data-act")==="open";
+      files.forEach(function(d){ d.open = open; });
+    });
+  }
+
+  // In-page table of contents (nested inline under the active page link).
+  var toc = document.getElementById("page-toc");
+  if(toc){
+    content.querySelectorAll("h2,h3").forEach(function(h){
+      var a = document.createElement("a");
+      a.href = "#"+h.id; a.textContent = h.textContent;
+      if(h.tagName==="H3") a.className="lvl3";
+      toc.appendChild(a);
+    });
+    var links = Array.prototype.slice.call(toc.querySelectorAll("a"));
+    var map = {}; links.forEach(function(a){ map[a.getAttribute("href").slice(1)] = a; });
+    var obs = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){
+          links.forEach(function(l){l.classList.remove("active");});
+          var a = map[en.target.id]; if(a){a.classList.add("active"); a.scrollIntoView({block:"nearest"});}
+        }
+      });
+    },{rootMargin:"0px 0px -75% 0px"});
+    content.querySelectorAll("h2,h3").forEach(function(h){obs.observe(h);});
+  }
+
+  // Collapsible sidebar groups.
+  document.querySelectorAll(".nav-group-h").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var g = btn.parentNode; var open = g.classList.toggle("open");
+      btn.setAttribute("aria-expanded", open ? "true" : "false");
+    });
   });
 
-  // Active-link highlighting on scroll.
-  var links = Array.prototype.slice.call(toc.querySelectorAll("a"));
-  var map = {}; links.forEach(function(a){ map[a.getAttribute("href").slice(1)] = a; });
-  var obs = new IntersectionObserver(function(entries){
-    entries.forEach(function(en){
-      if(en.isIntersecting){
-        links.forEach(function(l){l.classList.remove("active");});
-        var a = map[en.target.id]; if(a){a.classList.add("active");
-          a.scrollIntoView({block:"nearest"});}
-      }
-    });
-  },{rootMargin:"0px 0px -75% 0px"});
-  content.querySelectorAll("h2,h3").forEach(function(h){obs.observe(h);});
-
   // Mobile menu.
-  var sb = document.getElementById("sidebar");
-  document.getElementById("hamburger").addEventListener("click",function(){sb.classList.toggle("open");});
-  toc.addEventListener("click",function(){sb.classList.remove("open");});
+  var sb = document.getElementById("sidebar"), scrim = document.getElementById("scrim");
+  function closeMenu(){ sb.classList.remove("open"); scrim.classList.remove("show"); }
+  document.getElementById("hamburger").addEventListener("click", function(){
+    sb.classList.toggle("open"); scrim.classList.toggle("show");
+  });
+  scrim.addEventListener("click", closeMenu);
+  document.getElementById("pages").addEventListener("click", function(e){
+    if(e.target.closest("a")) closeMenu();
+  });
+
+  // Scroll progress bar + back-to-top.
+  var prog = document.getElementById("progress"), toTop = document.getElementById("toTop");
+  function onScroll(){
+    var h = document.documentElement;
+    var max = h.scrollHeight - h.clientHeight;
+    var pct = max > 0 ? (h.scrollTop / max) * 100 : 0;
+    prog.style.width = pct + "%";
+    if(h.scrollTop > 400) toTop.classList.add("show"); else toTop.classList.remove("show");
+  }
+  window.addEventListener("scroll", onScroll, {passive:true}); onScroll();
+  toTop.addEventListener("click", function(){ window.scrollTo({top:0, behavior:"smooth"}); });
 
   // Theme toggle (persisted).
   var stored = null; try{ stored = localStorage.getItem("labguide-theme"); }catch(e){}
   if(stored){ document.documentElement.setAttribute("data-theme", stored); }
-  document.getElementById("theme-toggle").addEventListener("click",function(){
-    var htmlEl = document.documentElement;
-    var next = htmlEl.getAttribute("data-theme")==="dark" ? "light" : "dark";
-    htmlEl.setAttribute("data-theme", next);
+  document.getElementById("theme-toggle").addEventListener("click", function(){
+    var el = document.documentElement;
+    var next = el.getAttribute("data-theme")==="dark" ? "light" : "dark";
+    el.setAttribute("data-theme", next);
     try{ localStorage.setItem("labguide-theme", next); }catch(e){}
   });
 })();

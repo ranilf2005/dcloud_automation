@@ -1,6 +1,7 @@
 ---
 title: Lab 2 — Cisco Security IaC (FMC/FTD)
-nav: Lab 2 · Security IaC
+nav: Scenarios & topology
+group: Lab 2 · Security IaC
 order: 4
 eyebrow: Lab 2
 description: FMC/FTD firewall as code — the same access policy three ways, with Terraform, REST API, and Ansible.

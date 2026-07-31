@@ -124,6 +124,12 @@ def group_of(rel: pathlib.Path) -> str:
 
 
 def render_lab(root: pathlib.Path) -> str:
+    """Render each file as a collapsible <details> block, grouped by folder.
+
+    The blank lines around the fenced code block are required so the Markdown
+    renderer parses the code (and applies syntax highlighting) instead of treating
+    it as raw HTML inside <details>.
+    """
     files = collect_files(root)
     lines: list[str] = []
     current_group = None
@@ -137,11 +143,17 @@ def render_lab(root: pathlib.Path) -> str:
         content = f.read_text(encoding="utf-8", errors="replace").rstrip("\n")
         lang = lang_for(f)
         fence = fence_for(content)
-        lines.append(f"### `{rel_posix}`\n")
-        desc = DESCRIPTIONS.get(rel_posix)
-        if desc:
-            lines.append(desc + "\n")
-        lines.append(f"{fence}{lang}\n{content}\n{fence}\n")
+        desc = DESCRIPTIONS.get(rel_posix, "")
+        desc_html = f' <span class="file-desc">— {desc}</span>' if desc else ""
+        lines.append(f'<details class="file">')
+        lines.append(f"<summary><code>{rel_posix}</code>{desc_html}</summary>")
+        lines.append("")  # blank line: resume Markdown parsing for the code block
+        lines.append(f"{fence}{lang}")
+        lines.append(content)
+        lines.append(fence)
+        lines.append("")  # blank line before closing the HTML block
+        lines.append("</details>")
+        lines.append("")
     return "\n".join(lines)
 
 
@@ -152,9 +164,10 @@ LABS = [
         "frontmatter": (
             "---\n"
             "title: Appendix — Lab 1 project files\n"
-            "nav: Lab 1 · Files\n"
+            "nav: Project files\n"
+            "group: Lab 1 · NetDevOps\n"
             "order: 6\n"
-            "eyebrow: Reference\n"
+            "eyebrow: Lab 1 · Reference\n"
             "description: Every Lab 1 (NetDevOps) project file in full — syntax-highlighted, with a copy button.\n"
             "---\n"
         ),
@@ -172,9 +185,10 @@ LABS = [
         "frontmatter": (
             "---\n"
             "title: Appendix — Lab 2 project files\n"
-            "nav: Lab 2 · Files\n"
+            "nav: Project files\n"
+            "group: Lab 2 · Security IaC\n"
             "order: 7\n"
-            "eyebrow: Reference\n"
+            "eyebrow: Lab 2 · Reference\n"
             "description: Every Lab 2 (Security IaC) project file in full — Terraform, REST API, and Ansible — with a copy button.\n"
             "---\n"
         ),
@@ -198,7 +212,7 @@ def main() -> None:
         body = render_lab(root)
         text = lab["frontmatter"] + "\n" + lab["intro"] + body + "\n"
         lab["out"].write_text(text, encoding="utf-8")
-        n = text.count("###")
+        n = text.count('<details class="file">')
         print(f"Wrote {lab['out'].relative_to(DOCS_DIR).as_posix()}  ({n} files, {len(text):,} bytes)")
 
 

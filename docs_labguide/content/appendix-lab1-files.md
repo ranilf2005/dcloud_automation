@@ -1,8 +1,9 @@
 ---
 title: Appendix — Lab 1 project files
-nav: Lab 1 · Files
+nav: Project files
+group: Lab 1 · NetDevOps
 order: 6
-eyebrow: Reference
+eyebrow: Lab 1 · Reference
 description: Every Lab 1 (NetDevOps) project file in full — syntax-highlighted, with a copy button.
 ---
 
@@ -15,7 +16,8 @@ description: Every Lab 1 (NetDevOps) project file in full — syntax-highlighted
 
 ## Project root
 
-### `.gitignore`
+<details class="file">
+<summary><code>.gitignore</code></summary>
 
 ````text
 # pyATS / Python
@@ -38,9 +40,10 @@ runinfo/
 .DS_Store
 ````
 
-### `.gitlab-ci.yml`
+</details>
 
-The pipeline definition: three stages — validate → network_check → deploy.
+<details class="file">
+<summary><code>.gitlab-ci.yml</code> <span class="file-desc">— The pipeline definition: three stages — validate → network_check → deploy.</span></summary>
 
 ````yaml
 # =====================================================================
@@ -111,9 +114,10 @@ ping_and_loopback:
     - python jobs/ping_and_loopback.py --testbed testbed/testbed.yaml --config configs/loopback3.yaml
 ````
 
-### `requirements.txt`
+</details>
 
-Python dependencies (pyATS, Genie, PyYAML).
+<details class="file">
+<summary><code>requirements.txt</code> <span class="file-desc">— Python dependencies (pyATS, Genie, PyYAML).</span></summary>
 
 ````text
 # Cisco test/automation frameworks used by the pipeline jobs
@@ -122,10 +126,13 @@ genie
 PyYAML
 ````
 
+</details>
+
 
 ## ansible/
 
-### `ansible/.ansible-lint`
+<details class="file">
+<summary><code>ansible/.ansible-lint</code></summary>
 
 ````yaml
 ---
@@ -135,7 +142,10 @@ exclude_paths:
   - collections/
 ````
 
-### `ansible/.yamllint`
+</details>
+
+<details class="file">
+<summary><code>ansible/.yamllint</code></summary>
 
 ````yaml
 ---
@@ -154,9 +164,10 @@ ignore: |
   collections/
 ````
 
-### `ansible/ansible.cfg`
+</details>
 
-Ansible configuration for the playbooks.
+<details class="file">
+<summary><code>ansible/ansible.cfg</code> <span class="file-desc">— Ansible configuration for the playbooks.</span></summary>
 
 ````ini
 # Ansible configuration for the CLMEL26 VLAN CI/CD task.
@@ -175,9 +186,10 @@ command_timeout = 60
 connect_timeout = 60
 ````
 
-### `ansible/requirements.yml`
+</details>
 
-Ansible collections (cisco.ios, ansible.netcommon).
+<details class="file">
+<summary><code>ansible/requirements.yml</code> <span class="file-desc">— Ansible collections (cisco.ios, ansible.netcommon).</span></summary>
 
 ````yaml
 ---
@@ -189,12 +201,13 @@ collections:
     version: ">=5.0.0"
 ````
 
+</details>
+
 
 ## configs/
 
-### `configs/loopback3.yaml`
-
-Declarative Loopback3 addresses and the ping target.
+<details class="file">
+<summary><code>configs/loopback3.yaml</code> <span class="file-desc">— Declarative Loopback3 addresses and the ping target.</span></summary>
 
 ````yaml
 # =====================================================================
@@ -221,9 +234,10 @@ devices:
       mask: 255.255.255.255
 ````
 
-### `configs/loopbacks.yaml`
+</details>
 
-Declarative Loopback300 definition.
+<details class="file">
+<summary><code>configs/loopbacks.yaml</code> <span class="file-desc">— Declarative Loopback300 definition.</span></summary>
 
 ````yaml
 devices:
@@ -238,12 +252,13 @@ devices:
       mask: 255.255.255.255
 ````
 
+</details>
+
 
 ## jobs/
 
-### `jobs/configure_loopback.py`
-
-Applies Loopback300 to the routers once the tests pass.
+<details class="file">
+<summary><code>jobs/configure_loopback.py</code> <span class="file-desc">— Applies Loopback300 to the routers once the tests pass.</span></summary>
 
 ````python
 import sys
@@ -330,9 +345,10 @@ if __name__ == "__main__":
     main()
 ````
 
-### `jobs/ping_and_loopback.py`
+</details>
 
-Ping gate — pings the target and, only if all pass, creates Loopback3.
+<details class="file">
+<summary><code>jobs/ping_and_loopback.py</code> <span class="file-desc">— Ping gate — pings the target and, only if all pass, creates Loopback3.</span></summary>
 
 ````python
 #!/usr/bin/env python3
@@ -517,9 +533,10 @@ if __name__ == "__main__":
     main()
 ````
 
-### `jobs/smoke_job.py`
+</details>
 
-pyATS job entry point that runs the test cases.
+<details class="file">
+<summary><code>jobs/smoke_job.py</code> <span class="file-desc">— pyATS job entry point that runs the test cases.</span></summary>
 
 ````python
 import os
@@ -533,12 +550,13 @@ def main(runtime):
     run(testscript=testscript, testbed=testbed)
 ````
 
+</details>
+
 
 ## testbed/
 
-### `testbed/testbed.yaml`
-
-pyATS testbed — each device's OS, management IP, credentials, and SSH options.
+<details class="file">
+<summary><code>testbed/testbed.yaml</code> <span class="file-desc">— pyATS testbed — each device's OS, management IP, credentials, and SSH options.</span></summary>
 
 ````yaml
 testbed:
@@ -588,12 +606,13 @@ devices:
         password: C1sco12345
 ````
 
+</details>
+
 
 ## ansible/
 
-### `ansible/group_vars/all.yml`
-
-Shared connection credentials for the routers.
+<details class="file">
+<summary><code>ansible/group_vars/all.yml</code> <span class="file-desc">— Shared connection credentials for the routers.</span></summary>
 
 ````yaml
 ---
@@ -609,9 +628,10 @@ ansible_become_method: enable
 ansible_become_password: C1sco12345
 ````
 
-### `ansible/inventory/hosts.yml`
+</details>
 
-Test and production device groups.
+<details class="file">
+<summary><code>ansible/inventory/hosts.yml</code> <span class="file-desc">— Test and production device groups.</span></summary>
 
 ````yaml
 ---
@@ -634,9 +654,10 @@ all:
           ansible_host: 198.18.1.6
 ````
 
-### `ansible/playbooks/configure_vlans.yml`
+</details>
 
-Applies the validated VLANs to the routers.
+<details class="file">
+<summary><code>ansible/playbooks/configure_vlans.yml</code> <span class="file-desc">— Applies the validated VLANs to the routers.</span></summary>
 
 ````yaml
 ---
@@ -678,9 +699,10 @@ Applies the validated VLANs to the routers.
         save_when: modified
 ````
 
-### `ansible/playbooks/validate_vlans.yml`
+</details>
 
-Offline schema asserts for every VLAN (no device is touched).
+<details class="file">
+<summary><code>ansible/playbooks/validate_vlans.yml</code> <span class="file-desc">— Offline schema asserts for every VLAN (no device is touched).</span></summary>
 
 ````yaml
 ---
@@ -763,9 +785,10 @@ Offline schema asserts for every VLAN (no device is touched).
         msg: "All VLAN/interface checks passed - safe to promote to production."
 ````
 
-### `ansible/vars/vlans.yml`
+</details>
 
-VLAN intent — the file attendees edit; validated before any device is touched.
+<details class="file">
+<summary><code>ansible/vars/vlans.yml</code> <span class="file-desc">— VLAN intent — the file attendees edit; validated before any device is touched.</span></summary>
 
 ````yaml
 ---
@@ -792,12 +815,13 @@ vlans:
       - GigabitEthernet0/3
 ````
 
+</details>
+
 
 ## jobs/
 
-### `jobs/tests/test_ping_routes.py`
-
-pyATS test cases: ping 192.168.1.1 and compare static routes.
+<details class="file">
+<summary><code>jobs/tests/test_ping_routes.py</code> <span class="file-desc">— pyATS test cases: ping 192.168.1.1 and compare static routes.</span></summary>
 
 ````python
 from pyats import aetest
@@ -878,4 +902,6 @@ class CommonCleanup(aetest.CommonCleanup):
             except Exception:
                 pass
 ````
+
+</details>
 

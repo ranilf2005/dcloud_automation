@@ -1,6 +1,7 @@
 ---
 title: Lab 1 — NetDevOps CI/CD
-nav: Lab 1 · NetDevOps
+nav: Concepts & pipeline
+group: Lab 1 · NetDevOps
 order: 2
 eyebrow: Lab 1
 description: Routers as code — a GitLab pipeline (pyATS · Ansible) that only configures devices when tests pass.
