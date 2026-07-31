@@ -125,13 +125,20 @@ def build_page_nav(pages, current_slug):
         for p in group_pages:
             is_active = p["slug"] == current_slug
             cls = "page-link active" if is_active else "page-link"
-            out.append(
-                '<a class="{0}" href="{1}">{2}</a>'.format(
-                    cls, html.escape(p["output"]), html.escape(p["nav"])
-                )
+            link = '<a class="{0}" href="{1}">{2}</a>'.format(
+                cls, html.escape(p["output"]), html.escape(p["nav"])
             )
             if is_active:
+                out.append('<div class="page-active-row">')
+                out.append(link)
+                out.append(
+                    '<button class="toc-master" type="button" aria-expanded="true" '
+                    'aria-label="Show or hide contents"><span class="chev">&rsaquo;</span></button>'
+                )
+                out.append("</div>")
                 out.append('<nav class="page-toc" id="page-toc" aria-label="On this page"></nav>')
+            else:
+                out.append(link)
         out.append("</div></div>")
     return "".join(out)
 
@@ -205,13 +212,32 @@ a:hover{text-decoration:underline}
   font-weight:600;border-left:2px solid transparent}
 .page-link:hover{background:var(--panel2);color:var(--text);text-decoration:none}
 .page-link.active{color:var(--accent);border-left-color:var(--accent);background:var(--panel2)}
+/* active page row: link + master show/hide-contents toggle */
+.page-active-row{display:flex;align-items:center}
+.page-active-row .page-link{flex:1}
+.toc-master{background:none;border:none;color:var(--muted);cursor:pointer;padding:6px 8px;flex:none}
+.toc-master:hover{color:var(--accent)}
+.toc-master .chev{display:inline-block;transition:transform .15s;transform:rotate(90deg)}
+.toc-master.collapsed .chev{transform:rotate(0)}
+/* collapsible in-page table of contents */
 .page-toc{display:flex;flex-direction:column;gap:1px;margin:3px 0 8px 12px;
   border-left:1px solid var(--border);padding-left:4px}
 .page-toc a{color:var(--muted);font-size:.82rem;padding:3px 9px;border-radius:6px;
-  border-left:2px solid transparent;margin-left:-6px}
-.page-toc a.lvl3{padding-left:20px;font-size:.78rem}
+  border-left:2px solid transparent;margin-left:-6px;display:block}
+.page-toc a.lvl3{font-size:.78rem}
 .page-toc a:hover{color:var(--text);background:var(--panel2);text-decoration:none}
 .page-toc a.active{color:var(--accent);border-left-color:var(--accent);background:var(--panel2)}
+.toc-sec{display:flex;flex-direction:column}
+.toc-row{display:flex;align-items:flex-start}
+.toc-row>a{flex:1}
+.toc-toggle{background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:3px 3px 0;line-height:1.2;flex:none;width:18px}
+.toc-toggle span{display:inline-block;transition:transform .15s;transform:rotate(90deg);font-size:.85rem}
+.toc-sec.collapsed .toc-toggle span{transform:rotate(0)}
+.toc-toggle:hover{color:var(--accent)}
+.toc-toggle.empty{visibility:hidden}
+.toc-children{display:flex;flex-direction:column;padding-left:16px}
+.toc-sec.collapsed .toc-children{display:none}
 
 .theme-toggle{margin:14px 14px 0;width:calc(100% - 28px);padding:9px;border:1px solid var(--border);
   background:var(--panel2);color:var(--text);border-radius:9px;cursor:pointer;font-size:.85rem;
@@ -426,22 +452,63 @@ details.file>pre{margin:0;border:none;border-top:1px solid var(--border);border-
     });
   }
 
-  // In-page table of contents (nested inline under the active page link).
+  // In-page table of contents — nested & collapsible: each H2 topic can fold its
+  // H3 sub-topics, and a master toggle folds the whole list.
   var toc = document.getElementById("page-toc");
   if(toc){
+    var curSec = null, curKids = null;
     content.querySelectorAll("h2,h3").forEach(function(h){
       var a = document.createElement("a");
       a.href = "#"+h.id; a.textContent = h.textContent;
-      if(h.tagName==="H3") a.className="lvl3";
-      toc.appendChild(a);
+      if(h.tagName==="H2"){
+        var sec = document.createElement("div"); sec.className="toc-sec";
+        var row = document.createElement("div"); row.className="toc-row";
+        var kids = document.createElement("div"); kids.className="toc-children";
+        var tg = document.createElement("button");
+        tg.className="toc-toggle"; tg.type="button";
+        tg.setAttribute("aria-label","Toggle sub-topics");
+        tg.innerHTML="<span>&rsaquo;</span>";
+        (function(s){ tg.addEventListener("click", function(e){
+          e.preventDefault(); e.stopPropagation(); s.classList.toggle("collapsed");
+        }); })(sec);
+        row.appendChild(tg); row.appendChild(a);
+        sec.appendChild(row); sec.appendChild(kids); toc.appendChild(sec);
+        curSec = sec; curKids = kids;
+      } else {
+        a.className="lvl3";
+        if(curKids){ curKids.appendChild(a); } else { toc.appendChild(a); }
+      }
     });
+    // Hide the toggle on H2 topics that have no sub-topics (keeps alignment).
+    toc.querySelectorAll(".toc-sec").forEach(function(s){
+      if(!s.querySelector(".toc-children").children.length){
+        var t = s.querySelector(".toc-toggle"); if(t) t.classList.add("empty");
+      }
+    });
+    // Master toggle: show/hide the whole contents list.
+    var master = document.querySelector(".toc-master");
+    if(master){
+      if(!toc.children.length){ master.style.display="none"; }
+      master.addEventListener("click", function(e){
+        e.preventDefault();
+        var collapsed = master.classList.toggle("collapsed");
+        toc.style.display = collapsed ? "none" : "";
+        master.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      });
+    }
+    // Scroll-spy: highlight the current heading (and reveal its section).
     var links = Array.prototype.slice.call(toc.querySelectorAll("a"));
     var map = {}; links.forEach(function(a){ map[a.getAttribute("href").slice(1)] = a; });
     var obs = new IntersectionObserver(function(entries){
       entries.forEach(function(en){
         if(en.isIntersecting){
           links.forEach(function(l){l.classList.remove("active");});
-          var a = map[en.target.id]; if(a){a.classList.add("active"); a.scrollIntoView({block:"nearest"});}
+          var a = map[en.target.id];
+          if(a){
+            a.classList.add("active");
+            var sec = a.closest(".toc-sec"); if(sec) sec.classList.remove("collapsed");
+            a.scrollIntoView({block:"nearest"});
+          }
         }
       });
     },{rootMargin:"0px 0px -75% 0px"});
