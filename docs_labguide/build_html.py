@@ -356,7 +356,32 @@ details.file>pre{margin:0;border:none;border-top:1px solid var(--border);border-
     mermaid.run({querySelector:".mermaid"});
   }catch(e){console.error("mermaid",e);}
 
-  // Highlight known languages only (hcl/terraform etc. render clean plain text).
+  // Register a compact HCL / Terraform grammar (highlight.js core has none), so
+  // .tf files get coloured like the other languages.
+  try{
+    hljs.registerLanguage("hcl", function(hl){
+      var STRING = {className:"string", begin:'"', end:'"',
+        contains:[{className:"subst", begin:/\$\{/, end:/\}/}, hl.BACKSLASH_ESCAPE]};
+      return {
+        name:"HCL", aliases:["tf","terraform"],
+        keywords:{
+          keyword:"resource variable output provider module data terraform locals dynamic for_each count depends_on lifecycle",
+          literal:"true false null"
+        },
+        contains:[
+          hl.HASH_COMMENT_MODE,
+          hl.COMMENT(/\/\//, /$/),
+          hl.COMMENT(/\/\*/, /\*\//),
+          STRING,
+          {className:"number", begin:/\b\d+(\.\d+)?/, relevance:0},
+          {className:"attr", begin:/[\w-]+(?=\s*=[^=])/},
+          {className:"built_in", begin:/\b(var|local|module|data|path|each|self)(?=\.)/}
+        ]
+      };
+    });
+  }catch(e){}
+
+  // Highlight known languages only (unknown ones render clean plain text).
   content.querySelectorAll("pre code").forEach(function(el){
     if(el.classList.contains("language-mermaid")) return;
     var m = (el.className.match(/language-([\w-]+)/) || [])[1];
