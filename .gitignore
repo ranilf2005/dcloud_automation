@@ -24,6 +24,12 @@
 **/collections/ansible_collections/
 *.retry
 
+# ---- Instructor-only material (answer keys, drafts) ----
+ctf/
+**/lab1_network_automation_ctf.md
+**/lab2_security_automation_ctf.md
+**/lab1_network_automation_steps.docx
+
 # ---- Editor / OS ----
 .DS_Store
 .idea/
